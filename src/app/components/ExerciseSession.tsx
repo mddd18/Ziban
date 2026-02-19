@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Volume2, Check, X, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Volume2, Check, X, RotateCcw, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { ExerciseType } from '../App';
+import { supabase } from '../../supabase'; // 👈 Supabase bazamizni chaqiramiz
 
 interface Question {
   id: number;
@@ -17,51 +18,9 @@ interface ExerciseSessionProps {
   onComplete: () => void;
 }
 
-// Mock questions data
-const mockQuestions: Record<ExerciseType, Question[]> = {
-  definition: [
-    {
-      id: 1,
-      question: 'What is the definition of "Pipeline"?',
-      word: 'Pipeline',
-      options: [
-        'It sohasıda ketma ketlik 1 ish yakunlap keyingi ish boshlanishi',
-        'Potensial kelishuv'
-      ],
-      correctAnswer: 0
-    },
-    {
-      id: 2,
-      question: 'What is the definition of "Opportunity"?',
-      word: 'Opportunity',
-      options: [
-        'It sohasıda ketma ketlik 1 ish yakunlap keyingi ish boshlanishi',
-        'Potensial kelishuv'
-      ],
-      correctAnswer: 1
-    }
-  ],
-  translation: [
-    {
-      id: 1,
-      question: '"Jumıs" sóziniń ingliz tilindegi mánisi?',
-      word: 'Jumıs',
-      options: ['Work', 'Rest', 'Play', 'Study'],
-      correctAnswer: 0
-    },
-    {
-      id: 2,
-      question: '"Bilim" sóziniń ingliz tilindegi mánisi?',
-      word: 'Bilim',
-      options: ['Power', 'Money', 'Knowledge', 'Time'],
-      correctAnswer: 2
-    }
-  ],
-  terms: []
-};
-
 export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSessionProps) {
-  const [questions] = useState<Question[]>(mockQuestions[exerciseType] || []);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(true); // 👈 Yuklanish holati
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -69,6 +28,54 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState<{word: string; correct: boolean}[]>([]);
+
+  // 👈 BAZADAN SAVOLLARNI YUKLAB OLISH
+  useEffect(() => {
+    async function fetchQuestions() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('exercise_type', exerciseType); // Tanlangan bo'limga qarab savollarni oladi
+
+      if (error) {
+        console.error('Xatolik:', error);
+      } else if (data) {
+        // Bazadan kelgan ma'lumotni formatlaymiz
+        const formattedQuestions = data.map((q: any) => ({
+          id: q.id,
+          question: q.question,
+          word: q.word,
+          options: q.options,
+          correctAnswer: q.correct_answer
+        }));
+        setQuestions(formattedQuestions);
+      }
+      setLoading(false);
+    }
+
+    fetchQuestions();
+  }, [exerciseType]);
+
+  // Agar ma'lumot internetdan yuklanayotgan bo'lsa
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+        <p className="text-gray-600 font-medium">Savollar bazadan yuklanmoqda...</p>
+      </div>
+    );
+  }
+
+  // Agar bu bo'limda savollar qo'shilmagan bo'lsa
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <h2 className="text-xl font-bold mb-4">Hozircha bu bo'limda savollar yo'q</h2>
+        <Button onClick={onComplete}>Ortga qaytish</Button>
+      </div>
+    );
+  }
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
@@ -92,14 +99,11 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
 
     setAnsweredQuestions(prev => [...prev, { word: currentQuestion.word, correct: isCorrect }]);
 
-    // Save to localStorage
+    // Vaqtincha lokal xotiraga ham yozamiz
     const stats = JSON.parse(localStorage.getItem('exerciseStats') || '{"total": 0, "correct": 0, "incorrect": 0}');
     stats.total += 1;
-    if (isCorrect) {
-      stats.correct += 1;
-    } else {
-      stats.incorrect += 1;
-    }
+    if (isCorrect) stats.correct += 1;
+    else stats.incorrect += 1;
     localStorage.setItem('exerciseStats', JSON.stringify(stats));
   };
 
@@ -167,18 +171,11 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
             </div>
 
             <div className="space-y-3 mb-8">
-              <Button
-                onClick={handleTryAgain}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 h-12"
-              >
+              <Button onClick={handleTryAgain} className="w-full bg-indigo-600 hover:bg-indigo-700 h-12">
                 <RotateCcw className="w-5 h-5 mr-2" />
                 Qayta baslash
               </Button>
-              <Button
-                onClick={onComplete}
-                variant="outline"
-                className="w-full h-12"
-              >
+              <Button onClick={onComplete} variant="outline" className="w-full h-12">
                 Basqa shınıǵıwdı tańlash
               </Button>
             </div>
@@ -187,21 +184,12 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
               <h3 className="font-bold text-lg mb-4">Qayta kóriw:</h3>
               <div className="space-y-2">
                 {answeredQuestions.map((item, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center justify-between p-4 rounded-lg ${
-                      item.correct ? 'bg-green-50' : 'bg-red-50'
-                    }`}
-                  >
+                  <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${item.correct ? 'bg-green-50' : 'bg-red-50'}`}>
                     <div className="flex items-center space-x-3">
                       <span className="font-medium">{item.word}</span>
                       <Volume2 className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" />
                     </div>
-                    {item.correct ? (
-                      <Check className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <X className="w-5 h-5 text-red-600" />
-                    )}
+                    {item.correct ? <Check className="w-5 h-5 text-green-600" /> : <X className="w-5 h-5 text-red-600" />}
                   </div>
                 ))}
               </div>
@@ -217,11 +205,7 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={onComplete}
-              className="p-2"
-            >
+            <Button variant="ghost" onClick={onComplete} className="p-2">
               <ArrowLeft className="w-6 h-6" />
             </Button>
             <h1 className="text-xl font-bold">
@@ -233,7 +217,6 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          {/* Progress */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-600">Jılıw</span>
@@ -242,7 +225,6 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
             <Progress value={progress} className="h-2" />
           </div>
 
-          {/* Question */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
               {currentQuestion.question}
@@ -252,7 +234,6 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
             </button>
           </div>
 
-          {/* Options */}
           <div className="space-y-3 mb-8">
             {currentQuestion.options.map((option, index) => {
               const isSelected = selectedAnswer === index;
@@ -286,7 +267,6 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
             })}
           </div>
 
-          {/* Action Button */}
           {!showResult ? (
             <Button
               onClick={handleSubmit}
@@ -306,10 +286,7 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
                   {selectedAnswer === currentQuestion.correctAnswer ? 'Durıs!' : 'Qáte!'}
                 </p>
               </div>
-              <Button
-                onClick={handleNext}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 h-12"
-              >
+              <Button onClick={handleNext} className="w-full bg-indigo-600 hover:bg-indigo-700 h-12">
                 {currentQuestionIndex < questions.length - 1 ? 'Keyingi' : 'Tamamlaw'}
               </Button>
             </div>
