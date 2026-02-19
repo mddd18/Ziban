@@ -3,7 +3,7 @@ import { ArrowLeft, Volume2, Check, X, RotateCcw, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { ExerciseType } from '../App';
-import { supabase } from '../../supabase'; // 👈 Supabase bazamizni chaqiramiz
+import { supabase } from '../../supabase';
 
 interface Question {
   id: number;
@@ -20,7 +20,7 @@ interface ExerciseSessionProps {
 
 export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSessionProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true); // 👈 Yuklanish holati
+  const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -29,19 +29,17 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
   const [isComplete, setIsComplete] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState<{word: string; correct: boolean}[]>([]);
 
-  // 👈 BAZADAN SAVOLLARNI YUKLAB OLISH
   useEffect(() => {
     async function fetchQuestions() {
       setLoading(true);
       const { data, error } = await supabase
         .from('questions')
         .select('*')
-        .eq('exercise_type', exerciseType); // Tanlangan bo'limga qarab savollarni oladi
+        .eq('exercise_type', exerciseType);
 
       if (error) {
         console.error('Xatolik:', error);
       } else if (data) {
-        // Bazadan kelgan ma'lumotni formatlaymiz
         const formattedQuestions = data.map((q: any) => ({
           id: q.id,
           question: q.question,
@@ -57,7 +55,6 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
     fetchQuestions();
   }, [exerciseType]);
 
-  // Agar ma'lumot internetdan yuklanayotgan bo'lsa
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
@@ -67,7 +64,6 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
     );
   }
 
-  // Agar bu bo'limda savollar qo'shilmagan bo'lsa
   if (questions.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -99,7 +95,6 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
 
     setAnsweredQuestions(prev => [...prev, { word: currentQuestion.word, correct: isCorrect }]);
 
-    // Vaqtincha lokal xotiraga ham yozamiz
     const stats = JSON.parse(localStorage.getItem('exerciseStats') || '{"total": 0, "correct": 0, "incorrect": 0}');
     stats.total += 1;
     if (isCorrect) stats.correct += 1;
@@ -107,13 +102,34 @@ export default function ExerciseSession({ exerciseType, onComplete }: ExerciseSe
     localStorage.setItem('exerciseStats', JSON.stringify(stats));
   };
 
-  const handleNext = () => {
+  // 👈 MANA SHU FUNKSIYA O'ZGARDI (Bazaga natijani saqlaydi)
+  const handleNext = async () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowResult(false);
     } else {
       setIsComplete(true);
+
+      // NATIJANING BAZAGA YUBORILISHI
+      const userPhone = localStorage.getItem('userPhone');
+      if (userPhone) {
+        const accuracy = Math.round((correctAnswers / questions.length) * 100);
+        
+        const { error } = await supabase
+          .from('user_results')
+          .insert([{
+            user_phone: userPhone,
+            exercise_type: exerciseType,
+            total_questions: questions.length,
+            correct_answers: correctAnswers,
+            accuracy: accuracy
+          }]);
+
+        if (error) {
+          console.error("Natijani saqlashda xatolik:", error);
+        }
+      }
     }
   };
 
