@@ -33,10 +33,14 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         }])
         .select();
 
+     // 1. SUPABASE GA YANGI FOYDALANUVCHINI QO'SHISH (Registration)
+      // ... (tepadagi kodlar bir xil turadi)
+
       if (error) {
         alert("Xatolik! Bul nomer aldınnan dizimnen ótken bolıwı múmkin.");
         console.error(error);
       } else if (data) {
+        localStorage.setItem('userPhone', phone); // 👈 MANA SHU QATORNI QO'SHIB QO'YAMIZ
         onLogin({ firstName, lastName, phone, coins: 0 });
       }
     } else {
