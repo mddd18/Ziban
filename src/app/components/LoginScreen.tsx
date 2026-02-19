@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { supabase } from '../../supabase'; // 👈 Supabase'ni chaqirib oldik
 
 interface LoginScreenProps {
   onLogin: (user: { firstName: string; lastName: string; phone: string; coins: number }) => void;
@@ -13,31 +14,52 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [loading, setLoading] = useState(false); // 👈 Yuklanish holati uchun qo'shdik
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => { // 👈 async qildik, chunki bazaga ulanish vaqt oladi
     e.preventDefault();
+    setLoading(true); // Yuklanishni boshlash
     
     if (isRegistering) {
-      // Registration
-      localStorage.setItem(`user_${phone}`, JSON.stringify({ firstName, lastName, password }));
-      onLogin({ firstName, lastName, phone, coins: 0 });
+      // 1. SUPABASE GA YANGI FOYDALANUVCHINI QO'SHISH (Registration)
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{ 
+          phone: phone, 
+          first_name: firstName, 
+          last_name: lastName, 
+          password: password,
+          coins: 0
+        }])
+        .select();
+
+      if (error) {
+        alert("Xatolik! Bul nomer aldınnan dizimnen ótken bolıwı múmkin.");
+        console.error(error);
+      } else if (data) {
+        onLogin({ firstName, lastName, phone, coins: 0 });
+      }
     } else {
-      // Login
-      const userData = localStorage.getItem(`user_${phone}`);
-      if (userData) {
-        const { firstName, lastName, password: storedPassword } = JSON.parse(userData);
-        if (password === storedPassword) {
-          // Get coins from user data or default to 0
-          const storedUser = localStorage.getItem('user');
-          const coins = storedUser ? JSON.parse(storedUser).coins || 0 : 0;
-          onLogin({ firstName, lastName, phone, coins });
-        } else {
-          alert('Nádurıs parol!');
-        }
+      // 2. SUPABASE DAN FOYDALANUVCHINI QIDIRISH (Login)
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('phone', phone)
+        .eq('password', password)
+        .single(); // Faqat bitta foydalanuvchini olish
+
+      if (error || !data) {
+        alert('Nádurıs parol yamasa nomer!');
       } else {
-        alert('Paydalanıwshı tabılmadı!');
+        onLogin({ 
+          firstName: data.first_name, 
+          lastName: data.last_name, 
+          phone: data.phone, 
+          coins: data.coins || 0 
+        });
       }
     }
+    setLoading(false); // Yuklanishni to'xtatish
   };
 
   return (
@@ -115,9 +137,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
             <Button 
               type="submit" 
+              disabled={loading} // 👈 Kutayotganda tugma bosilmaydi
               className="w-full bg-indigo-600 hover:bg-indigo-700"
             >
-              {isRegistering ? 'Dizimnen ótiw' : 'Kiriw'}
+              {loading ? 'Kútiń...' : (isRegistering ? 'Dizimnen ótiw' : 'Kiriw')}
             </Button>
           </form>
 
