@@ -51,6 +51,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       if (error || !data) {
         alert('Nádurıs parol yamasa nomer!');
       } else {
+        localStorage.setItem('userPhone', phone);
         onLogin({ 
           firstName: data.first_name, 
           lastName: data.last_name, 
