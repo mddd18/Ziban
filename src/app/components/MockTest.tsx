@@ -102,7 +102,7 @@ export default function MockTest({ onComplete }: { onComplete: () => void }) {
     return { level: 'Dáreje berilmeydi', color: 'text-red-600', bg: 'bg-red-50', text: 'Tómen kórsetkish' };
   };
 
-  // 4. Testni yakunlash va bazaga saqlash
+ // 4. Testni yakunlash va bazaga saqlash
   const handleFinishTest = async () => {
     if (isFinished) return;
     setIsFinished(true);
@@ -121,11 +121,14 @@ export default function MockTest({ onComplete }: { onComplete: () => void }) {
     setScore({ correct: correctCount, total: questions.length });
 
     const userPhone = localStorage.getItem('userPhone');
-    if (userPhone) {
+    // 👈 DIQQAT: Bu yerda examConfig bor-yo'qligini ham tekshiramiz
+    if (userPhone && examConfig) { 
       const accuracy = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
+      
       await supabase.from('user_results').insert([{
         user_phone: userPhone,
         exercise_type: 'mock_test',
+        exam_id: examConfig.id, // 👈 Qaysi imtihon ekanligini ID orqali saqlaymiz
         total_questions: questions.length,
         correct_answers: correctCount,
         accuracy: accuracy
