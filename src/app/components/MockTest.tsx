@@ -20,42 +20,47 @@ export default function MockTest({ onComplete }: { onComplete: () => void }) {
   const [score, setScore] = useState({ correct: 0, total: 0 });
 
   // 1. Bazadan ma'lumotlarni tortish
-  useEffect(() => {
+ useEffect(() => {
     async function initTest() {
       setLoading(true);
       const userPhone = localStorage.getItem('userPhone');
 
-      // Foydalanuvchi oldin topshirganini tekshirish
-      if (userPhone) {
-        const { data: existingResult } = await supabase
-          .from('user_results')
-          .select('*')
-          .eq('user_phone', userPhone)
-          .eq('exercise_type', 'mock_test')
-          .maybeSingle();
+      // 1. Avval joriy imtihonni (exam_settings) bazadan olamiz
+      const { data: settings } = await supabase.from('exam_settings').select('*').limit(1);
+      
+      if (settings && settings.length > 0) {
+        const currentExam = settings[0];
+        setExamConfig(currentExam);
 
-        if (existingResult) {
-          setHasTaken(true);
-          setLoading(false);
-          return;
+        // 2. Foydalanuvchi AYNAN SHU imtihonni (exam_id) ishlaganini tekshiramiz
+        if (userPhone) {
+          const { data: existingResult } = await supabase
+            .from('user_results')
+            .select('id')
+            .eq('user_phone', userPhone)
+            .eq('exercise_type', 'mock_test')
+            .eq('exam_id', currentExam.id) // 👈 MANA SHU YERDA ID TEKSHIRILADI
+            .limit(1);
+
+          if (existingResult && existingResult.length > 0) {
+            setHasTaken(true); // Shu testni ishlagan bo'lsa, bloklaymiz
+            setLoading(false);
+            return;
+          }
         }
       }
 
-      // Imtihon sozlamalari va savollarni olish
-      const { data: settings } = await supabase.from('exam_settings').select('*').maybeSingle();
+      // 3. Savollarni olib kelamiz
       const { data: qs } = await supabase.from('mock_questions').select('*').order('question_number');
-      
-      if (settings) setExamConfig(settings);
       if (qs) setQuestions(qs || []);
+      
       setLoading(false);
     }
     initTest();
 
-    // Jonli soatni yurgizish
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
-
   // 2. Vaqtni va Imtihon holatini nazorat qilish
   useEffect(() => {
     if (examConfig && !hasTaken && !isFinished) {
