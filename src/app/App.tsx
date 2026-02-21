@@ -8,19 +8,22 @@ import Literature from './components/Literature';
 import MockTest from './components/MockTest';
 import Rewards from './components/Rewards';
 import LearningCenters from './components/LearningCenters';
+import AdminPanel from './components/AdminPanel';
+import PremiumScreen from './components/PremiumScreen';
 
 interface User {
   firstName: string;
   lastName: string;
   phone: string;
   coins: number;
+  isPremium?: boolean;
 }
 
 export type ExerciseType = 'definition' | 'translation' | 'terms';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'exercises' | 'exercise-session' | 'statistics' | 'literature' | 'mock-test' | 'rewards' | 'learning-centers'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'exercises' | 'exercise-session' | 'statistics' | 'literature' | 'mock-test' | 'rewards' | 'learning-centers' | 'admin-panel' | 'premium'>('dashboard');
   const [selectedExerciseType, setSelectedExerciseType] = useState<ExerciseType | null>(null);
 
   useEffect(() => {
@@ -41,7 +44,12 @@ export default function App() {
     setCurrentView('dashboard');
   };
 
-  const handleNavigate = (view: 'dashboard' | 'exercises' | 'statistics' | 'literature' | 'mock-test' | 'rewards' | 'learning-centers') => {
+  const handleNavigate = (view: any) => {
+    // Agar premium bo'lmagan foydalanuvchi Mock Test yoki Rewards ga kirmoqchi bo'lsa, Premium oynasiga otadi
+    if ((view === 'mock-test' || view === 'rewards') && !user?.isPremium) {
+      setCurrentView('premium');
+      return;
+    }
     setCurrentView(view);
   };
 
@@ -62,6 +70,15 @@ export default function App() {
     }
   };
 
+  const handleUpgradeSuccess = () => {
+    if (user) {
+      const updatedUser = { ...user, isPremium: true };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setCurrentView('dashboard');
+    }
+  };
+
   if (!user) {
     return <LoginScreen onLogin={handleLogin} />;
   }
@@ -69,23 +86,13 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {currentView === 'dashboard' && (
-        <MainDashboard 
-          user={user} 
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
-        />
+        <MainDashboard user={user} onNavigate={handleNavigate} onLogout={handleLogout} />
       )}
       {currentView === 'exercises' && (
-        <ExercisesList 
-          onBack={() => setCurrentView('dashboard')}
-          onStartExercise={handleStartExercise}
-        />
+        <ExercisesList onBack={() => setCurrentView('dashboard')} onStartExercise={handleStartExercise} />
       )}
       {currentView === 'exercise-session' && selectedExerciseType && (
-        <ExerciseSession 
-          exerciseType={selectedExerciseType}
-          onComplete={handleExerciseComplete}
-        />
+        <ExerciseSession exerciseType={selectedExerciseType} onComplete={handleExerciseComplete} />
       )}
       {currentView === 'statistics' && (
         <Statistics onBack={() => setCurrentView('dashboard')} />
@@ -94,25 +101,21 @@ export default function App() {
         <Literature onBack={() => setCurrentView('dashboard')} />
       )}
       {currentView === 'mock-test' && (
-        <MockTest 
-          onBack={() => setCurrentView('dashboard')}
-          userPhone={user.phone}
-          onUpdateCoins={handleUpdateCoins}
-        />
+        <MockTest onComplete={() => setCurrentView('dashboard')} />
       )}
       {currentView === 'rewards' && (
-        <Rewards 
-          onBack={() => setCurrentView('dashboard')}
-          userCoins={user.coins}
-          onUpdateCoins={handleUpdateCoins}
-        />
+        <Rewards onBack={() => setCurrentView('dashboard')} userCoins={user.coins} onUpdateCoins={handleUpdateCoins} />
       )}
       {currentView === 'learning-centers' && (
-        <LearningCenters 
-          onBack={() => setCurrentView('dashboard')}
-          userCoins={user.coins}
-          onNavigateToRewards={() => setCurrentView('rewards')}
-        />
+        <LearningCenters onBack={() => setCurrentView('dashboard')} userCoins={user.coins} onNavigateToRewards={() => setCurrentView('rewards')} />
+      )}
+      
+      {/* YANGI QO'SHILGAN OYNALAR */}
+      {currentView === 'admin-panel' && (
+        <AdminPanel onBack={() => setCurrentView('dashboard')} />
+      )}
+      {currentView === 'premium' && (
+        <PremiumScreen onBack={() => setCurrentView('dashboard')} onUpgradeSuccess={handleUpgradeSuccess} />
       )}
     </div>
   );
