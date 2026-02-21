@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { supabase } from '../../supabase'; // 👈 Supabase'ni chaqirib oldik
+import { supabase } from '../../supabase';
 
+// 👈 interface ga isPremium ni qo'shdik
 interface LoginScreenProps {
-  onLogin: (user: { firstName: string; lastName: string; phone: string; coins: number }) => void;
+  onLogin: (user: { firstName: string; lastName: string; phone: string; coins: number; isPremium?: boolean }) => void;
 }
 
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
@@ -14,11 +15,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [loading, setLoading] = useState(false); // 👈 Yuklanish holati uchun qo'shdik
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => { // 👈 async qildik, chunki bazaga ulanish vaqt oladi
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); // Yuklanishni boshlash
+    setLoading(true);
     
     if (isRegistering) {
       // 1. SUPABASE GA YANGI FOYDALANUVCHINI QO'SHISH (Registration)
@@ -29,19 +30,17 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           first_name: firstName, 
           last_name: lastName, 
           password: password,
-          coins: 0
+          coins: 0,
+          is_premium: false // Yangi ro'yxatdan o'tganlar tekin tarifda bo'ladi
         }])
         .select();
-
-     // 1. SUPABASE GA YANGI FOYDALANUVCHINI QO'SHISH (Registration)
-      // ... (tepadagi kodlar bir xil turadi)
 
       if (error) {
         alert("Xatolik! Bul nomer aldınnan dizimnen ótken bolıwı múmkin.");
         console.error(error);
       } else if (data) {
-        localStorage.setItem('userPhone', phone); // 👈 MANA SHU QATORNI QO'SHIB QO'YAMIZ
-        onLogin({ firstName, lastName, phone, coins: 0 });
+        localStorage.setItem('userPhone', phone);
+        onLogin({ firstName, lastName, phone, coins: 0, isPremium: false });
       }
     } else {
       // 2. SUPABASE DAN FOYDALANUVCHINI QIDIRISH (Login)
@@ -50,21 +49,24 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         .select('*')
         .eq('phone', phone)
         .eq('password', password)
-        .single(); // Faqat bitta foydalanuvchini olish
+        .single();
 
       if (error || !data) {
         alert('Nádurıs parol yamasa nomer!');
       } else {
         localStorage.setItem('userPhone', phone);
+        
+        // 🌟 MANA SHU YERDA PRO STATUSINI HAM QO'SHDIK 🌟
         onLogin({ 
           firstName: data.first_name, 
           lastName: data.last_name, 
           phone: data.phone, 
-          coins: data.coins || 0 
+          coins: data.coins || 0,
+          isPremium: data.is_premium || false // Bazadan PRO statusni tortadi
         });
       }
     }
-    setLoading(false); // Yuklanishni to'xtatish
+    setLoading(false);
   };
 
   return (
@@ -80,7 +82,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Qaraqalpaq tili sertifikası
+              Qaraqalpaq tili sertifikatı
             </h1>
             <p className="text-indigo-600 font-semibold text-lg">
               Ilim - bul tákirarlaw!
@@ -142,7 +144,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
             <Button 
               type="submit" 
-              disabled={loading} // 👈 Kutayotganda tugma bosilmaydi
+              disabled={loading}
               className="w-full bg-indigo-600 hover:bg-indigo-700"
             >
               {loading ? 'Kútiń...' : (isRegistering ? 'Dizimnen ótiw' : 'Kiriw')}
