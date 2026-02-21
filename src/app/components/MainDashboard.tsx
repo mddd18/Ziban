@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { useState } from 'react';
 
 // 👈 SHU YERGA O'Z RAQAMINGIZNI YOZING
-const ADMIN_PHONE = "+99813773933"; 
+const ADMIN_PHONE = "+998913773933"; 
 
 interface MainDashboardProps {
   user: { firstName: string; lastName: string; phone: string; coins: number; isPremium?: boolean };
@@ -13,6 +13,10 @@ interface MainDashboardProps {
 
 export default function MainDashboard({ user, onNavigate, onLogout }: MainDashboardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Telefon raqamini faqat sonlarga aylantirib tekshirish (+ belgisiz)
+  const cleanPhone = (phone: string) => phone.replace(/[^0-9]/g, '');
+  const isAdmin = cleanPhone(user.phone) === cleanPhone(ADMIN_PHONE);
 
   const menuItems = [
     { id: 'exercises' as const, title: 'Shınıǵıwlar', icon: Target, description: 'Test hám terminlar', color: 'from-indigo-500 to-purple-500', isPremiumOnly: false },
@@ -32,7 +36,6 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center relative">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth="2" /><circle cx="12" cy="12" r="4" strokeWidth="2" /></svg>
-                {/* Premium bo'lsa toj rasmi chiqadi */}
                 {user.isPremium && <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1 shadow-md"><Crown className="w-3 h-3 text-white" /></div>}
               </div>
               <div>
@@ -43,8 +46,6 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              
-              {/* Coinlar qismi (Agar Premium bo'lmasa qulf turadi) */}
               <div 
                 onClick={() => !user.isPremium && onNavigate('premium')}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-full shadow-md ${user.isPremium ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white' : 'bg-gray-100 text-gray-400 cursor-pointer border border-gray-200'}`}
@@ -53,7 +54,6 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
                 <span className="font-bold">{user.isPremium ? (user.coins || 0) : 'PRO'}</span>
                 {!user.isPremium && <Lock className="w-3 h-3 ml-1" />}
               </div>
-
               <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 hover:bg-gray-100 rounded-lg">
                 {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -73,7 +73,6 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         
-        {/* 🌟 PREMIUM NIMA BERADI BANNERI (Faqat tekin o'quvchilarga ko'rinadi) 🌟 */}
         {!user.isPremium && (
           <div 
             onClick={() => onNavigate('premium')}
@@ -97,7 +96,6 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            // Agar menyu faqat Premium uchun bo'lsa va user premium bo'lmasa qulflanadi
             const isLocked = item.isPremiumOnly && !user.isPremium;
             
             return (
@@ -107,13 +105,11 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
                 className={`relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer text-left ${isLocked ? 'opacity-80 grayscale-[30%]' : ''}`}
               >
                 <div className={`bg-gradient-to-br ${item.color} p-8 text-white h-full relative`}>
-                  
                   {isLocked && (
                     <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center">
                       <Lock className="w-4 h-4 mr-1" /> <span className="text-xs font-bold uppercase">PRO</span>
                     </div>
                   )}
-
                   <div className="flex items-center justify-between mb-4">
                     <Icon className="w-12 h-12" />
                   </div>
@@ -125,8 +121,8 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
           })}
         </div>
 
-        {/* FAQAT ADMIN KO'RADIGAN TUGMA */}
-        {user.phone === ADMIN_PHONE && (
+        {/* 🌟 FAQAT ADMIN KO'RADIGAN TUGMA 🌟 */}
+        {isAdmin && (
           <button
             onClick={() => onNavigate('admin-panel')}
             className="w-full mt-8 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold py-5 px-6 rounded-2xl flex items-center justify-start shadow-sm transition-all border-2 border-indigo-200 cursor-pointer"
