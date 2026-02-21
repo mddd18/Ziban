@@ -1,10 +1,14 @@
-import { Book, Target, BarChart3, FileText, LogOut, Menu, X, Coins, Gift, GraduationCap } from 'lucide-react';
+import { Book, Target, BarChart3, FileText, LogOut, Menu, X, Coins, Gift, GraduationCap, Settings } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState } from 'react';
 
+// 👈 DIQQAT: SHU YERGA O'Z RAQAMINGIZNI YOZING (Qanday ro'yxatdan o'tgan bo'lsangiz shunday)
+const ADMIN_PHONE = "+998913773933"; 
+
 interface MainDashboardProps {
   user: { firstName: string; lastName: string; phone: string; coins: number };
-  onNavigate: (view: 'exercises' | 'statistics' | 'literature' | 'mock-test' | 'rewards' | 'learning-centers') => void;
+  // 👈 'admin-panel' turini bu yerga qo'shdik
+  onNavigate: (view: 'exercises' | 'statistics' | 'literature' | 'mock-test' | 'rewards' | 'learning-centers' | 'admin-panel') => void;
   onLogout: () => void;
 }
 
@@ -123,9 +127,9 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className="relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+                className="relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer text-left"
               >
-                <div className={`bg-gradient-to-br ${item.color} p-8 text-white`}>
+                <div className={`bg-gradient-to-br ${item.color} p-8 text-white h-full`}>
                   <div className="flex items-center justify-between mb-4">
                     <Icon className="w-12 h-12" />
                   </div>
@@ -136,6 +140,23 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
             );
           })}
         </div>
+
+        {/* 🌟 FAQAT ADMIN KO'RADIGAN TUGMA 🌟 */}
+        {user.phone === ADMIN_PHONE && (
+          <button
+            onClick={() => onNavigate('admin-panel')}
+            className="w-full mt-6 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold py-5 px-6 rounded-2xl flex items-center justify-start shadow-sm transition-all border-2 border-indigo-200 cursor-pointer"
+          >
+            <div className="bg-indigo-600 p-3 rounded-xl mr-4">
+              <Settings className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-xl font-bold">Admin Panel</h3>
+              <p className="text-indigo-600 font-medium text-sm mt-1">Kitap júklew hám sistemanı basqarıw</p>
+            </div>
+          </button>
+        )}
+        
       </div>
     </div>
   );
