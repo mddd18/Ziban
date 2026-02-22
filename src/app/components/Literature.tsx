@@ -1,130 +1,60 @@
-import { ArrowLeft, Book, FileText, Download } from 'lucide-react';
-import { Button } from './ui/button';
+import { ChevronLeft, Book, ExternalLink, Search, Bookmark } from 'lucide-react';
 
 interface LiteratureProps {
   onBack: () => void;
 }
 
 export default function Literature({ onBack }: LiteratureProps) {
-  const literatureItems = [
-    {
-      id: 1,
-      title: 'Qaraqalpaq tili grammatikası',
-      description: 'Tilde grammarlıq qáǵıydalar hám úlgileri',
-      type: 'PDF',
-      pages: 150,
-      color: 'from-blue-500 to-indigo-500'
-    },
-    {
-      id: 2,
-      title: 'Sózlik hám terminler',
-      description: 'Basqı terminler menen tanısıw',
-      type: 'PDF',
-      pages: 85,
-      color: 'from-purple-500 to-pink-500'
-    },
-    {
-      id: 3,
-      title: 'Sertifikat imtihanına tayorlaw',
-      description: 'Imtihan formatı hám taslıq sorawlar',
-      type: 'PDF',
-      pages: 120,
-      color: 'from-green-500 to-teal-500'
-    },
-    {
-      id: 4,
-      title: 'Aúdarma texnikaları',
-      description: 'Aúdarma etiwdegi strateyalar',
-      type: 'PDF',
-      pages: 95,
-      color: 'from-orange-500 to-red-500'
-    },
+  const books = [
+    { id: 1, title: "Qaraqalpaq tili", author: "P. Do'simov", type: "Sabaqlıq", color: "bg-emerald-500", lightBg: "bg-emerald-50" },
+    { id: 2, title: "Terminler sózligi", author: "I. Sultanov", type: "Sózlik", color: "bg-amber-500", lightBg: "bg-amber-50" },
+    { id: 3, title: "Milliy sertifikat", author: "Ziyban Team", type: "Qollanba", color: "bg-indigo-500", lightBg: "bg-indigo-50" },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={onBack}
-              className="p-2"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </Button>
-            <h1 className="text-xl font-bold">Ádebiyatlar</h1>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F5EEDC] font-sans pb-10">
+      {/* HEADER */}
+      <div className="bg-[#2EB8A6] pt-14 pb-20 px-6 rounded-b-[60px] shadow-lg relative text-center">
+        <button onClick={onBack} className="absolute top-12 left-6 p-2.5 bg-white/20 rounded-2xl text-white backdrop-blur-md border border-white/30 active:scale-90 transition-all">
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <h2 className="text-white font-black text-2xl uppercase tracking-[0.2em] pt-2">Ádebiyatlar</h2>
+      </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Book className="w-10 h-10 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Oqıw materialları
-          </h2>
-          <p className="text-gray-600">
-            Sertifikatqa tayorlanıw ushın qájetti ádebiyatlar
-          </p>
+      <main className="px-6 -mt-10 space-y-6">
+        {/* QIDIRUV */}
+        <div className="bg-white rounded-[35px] p-5 shadow-sm flex items-center border-b-[6px] border-[#E8DFCC]">
+          <Search className="text-[#8DA6A1] w-6 h-6 mr-3" />
+          <input 
+            type="text" 
+            placeholder="Kitap izlew..." 
+            className="bg-transparent border-none outline-none w-full font-bold text-[#2C4A44] placeholder-[#A0B8B4]" 
+          />
         </div>
 
-        <div className="space-y-4">
-          {literatureItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden"
-            >
-              <div className="flex items-center p-6">
-                <div className={`w-16 h-20 bg-gradient-to-br ${item.color} rounded-lg flex items-center justify-center mr-4 flex-shrink-0`}>
-                  <FileText className="w-8 h-8 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-lg text-gray-900 mb-1">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-2">
-                    {item.description}
-                  </p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span className="flex items-center">
-                      <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
-                      {item.type}
-                    </span>
-                    <span>{item.pages} bet</span>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  className="ml-4 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
-                >
-                  <Download className="w-5 h-5" />
-                </Button>
+        {/* KITOB KARTALARI */}
+        <div className="space-y-5">
+          {books.map((book) => (
+            <div key={book.id} className="bg-white rounded-[40px] p-6 shadow-sm border-b-[6px] border-[#E8DFCC] flex items-center group active:translate-y-1 transition-all">
+              <div className={`w-16 h-20 ${book.color} rounded-2xl flex items-center justify-center mr-5 shadow-lg transform group-hover:rotate-2 transition-transform`}>
+                <Book className="text-white w-8 h-8" />
               </div>
+              <div className="flex-1">
+                <div className={`${book.lightBg} inline-block px-3 py-0.5 rounded-full mb-2`}>
+                   <span className={`text-[9px] font-black uppercase tracking-widest ${book.color.replace('bg-', 'text-')}`}>
+                     {book.type}
+                   </span>
+                </div>
+                <h3 className="font-black text-[#2C4A44] text-lg leading-tight mb-1">{book.title}</h3>
+                <p className="text-[#8DA6A1] text-xs font-bold italic">{book.author}</p>
+              </div>
+              <button className="w-12 h-12 bg-[#F5EEDC] rounded-2xl flex items-center justify-center text-[#2EB8A6] group-hover:bg-[#2EB8A6] group-hover:text-white transition-all">
+                <ExternalLink className="w-6 h-6" />
+              </button>
             </div>
           ))}
         </div>
-
-        {/* Info Card */}
-        <div className="mt-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl shadow-lg p-6 text-white">
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Book className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-2">Kitaplar haqında</h3>
-              <p className="text-white/90 text-sm">
-                Bu materiallar Qaraqalpaq tili sertifikatına tayorlanıw ushın áhmiyetli qájetti bilimlerdi ózinde jamlaydi. 
-                Úyreniw nátiyjeliligin artırıw ushın kún sayin oqıwdı tóńkemiz.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
