@@ -107,13 +107,16 @@ export default function App() {
       )}
 
       {/* 8. MUKOFOTLAR (COINLAR) */}
-      {currentView === 'rewards' && (
-        <Rewards 
-          userCoins={user.coins} 
-          onBack={() => setCurrentView('dashboard')} 
-          onUpdateCoins={(newCoins) => setUser({...user, coins: newCoins})} 
-        />
-      )}
+     {currentView === 'rewards' && (
+  <Rewards 
+    userCoins={user.coins} 
+    onBack={() => setCurrentView('dashboard')} 
+    onUpdateCoins={(newCoins) => {
+      // Bu funksiya ham App.tsx dagi user state-ni, ham bazani yangilashi kerak
+      handleUpdateCoins(newCoins); 
+    }} 
+  />
+)}
 
       {/* 9. O'QUV MARKAZLARI */}
       {currentView === 'learning-centers' && (
