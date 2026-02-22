@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from './supabase'; // Supabase ulanmasi borligiga ishonch hosil qiling
+import { supabase } from '../supabase'; // ✅ To'g'rilangan import yo'li
 import LoginScreen from './components/LoginScreen';
 import MainDashboard from './components/MainDashboard';
 import ExercisesList from './components/ExercisesList';
@@ -11,17 +11,17 @@ import Rewards from './components/Rewards';
 import LearningCenters from './components/LearningCenters';
 import AdminPanel from './components/AdminPanel';
 import PremiumScreen from './components/PremiumScreen';
-import ProfileScreen from './components/ProfileScreen'; // Profil oynasi qo'shildi
+import ProfileScreen from './components/ProfileScreen';
 
 interface User {
-  id?: string; // Bazadan keladigan ID
+  id?: string;
   firstName: string;
   lastName: string;
   phone: string;
   coins: number;
   isPremium?: boolean;
-  streak: number; // Yangi qo'shildi
-  learnedWords: number; // Yangi qo'shildi
+  streak: number;
+  learnedWords: number;
 }
 
 export type ExerciseType = 'definition' | 'translation' | 'terms';
@@ -31,7 +31,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState<'dashboard' | 'exercises' | 'exercise-session' | 'statistics' | 'literature' | 'mock-test' | 'rewards' | 'learning-centers' | 'admin-panel' | 'premium' | 'profile'>('dashboard');
   const [selectedExerciseType, setSelectedExerciseType] = useState<ExerciseType | null>(null);
 
-  // 1. STREAK MANTIQI (Login bo'lganda ishlaydi)
+  // 🔥 STREAK MANTIQI
   const handleStreakLogic = async (userData: any) => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
@@ -45,15 +45,14 @@ export default function App() {
       const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
 
       if (dayDiff === 1) {
-        newStreak += 1; // Kecha kirgan bo'lsa streak +1
+        newStreak += 1; // Kecha kirgan bo'lsa streak davom etadi
       } else if (dayDiff > 1) {
-        newStreak = 1; // Uzilib qolgan bo'lsa 1 dan boshlaydi
+        newStreak = 1; // Uzilib qolgan bo'lsa 1 dan boshlanadi
       }
     } else {
       newStreak = 1; // Birinchi marta kirishi
     }
 
-    // Bazani yangilash
     const { data, error } = await supabase
       .from('users')
       .update({ streak: newStreak, last_login: todayStr })
@@ -61,27 +60,22 @@ export default function App() {
       .select()
       .single();
 
-    if (!error && data) {
-      return data;
-    }
-    return userData;
+    return error ? userData : data;
   };
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      // Dastur ochilganda streakni tekshirish
       handleStreakLogic(parsedUser).then(updated => {
         setUser({
-          id: updated.id,
           firstName: updated.first_name,
           lastName: updated.last_name,
           phone: updated.phone,
           coins: updated.coins,
           isPremium: updated.is_premium,
           streak: updated.streak,
-          learnedWords: updated.learned_words
+          learnedWords: updated.learned_words || 0
         });
       });
     }
@@ -90,14 +84,13 @@ export default function App() {
   const handleLogin = async (userData: any) => {
     const updatedUser = await handleStreakLogic(userData);
     const finalUser = {
-      id: updatedUser.id,
       firstName: updatedUser.first_name,
       lastName: updatedUser.last_name,
       phone: updatedUser.phone,
       coins: updatedUser.coins,
       isPremium: updatedUser.is_premium,
       streak: updatedUser.streak,
-      learnedWords: updatedUser.learned_words
+      learnedWords: updatedUser.learned_words || 0
     };
     setUser(finalUser);
     localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -109,54 +102,31 @@ export default function App() {
     setCurrentView('dashboard');
   };
 
-  const handleNavigate = (view: any) => {
-    if ((view === 'mock-test' || view === 'rewards') && !user?.isPremium) {
-      setCurrentView('premium');
-      return;
-    }
-    setCurrentView(view);
-  };
-
-  // 2. MASHQLARNI TUGATGANDA % NI OSHIRISH
   const handleExerciseComplete = async () => {
     if (user) {
-      const newLearnedCount = (user.learnedWords || 0) + 1; // Har bir sessiya uchun +1
-      
+      const newCount = (user.learnedWords || 0) + 1;
       const { error } = await supabase
         .from('users')
-        .update({ learned_words: newLearnedCount })
+        .update({ learned_words: newCount })
         .eq('phone', user.phone);
 
       if (!error) {
-        const updatedUser = { ...user, learnedWords: newLearnedCount };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        const updated = { ...user, learnedWords: newCount };
+        setUser(updated);
+        localStorage.setItem('user', JSON.stringify(updated));
       }
     }
     setCurrentView('exercises');
   };
 
-  // ... (boshqa funksiyalar o'zgarishsiz qoladi)
-
-  if (!user) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
+  if (!user) return <LoginScreen onLogin={handleLogin} />;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {currentView === 'dashboard' && (
-        <MainDashboard user={user} onNavigate={handleNavigate} onLogout={handleLogout} />
-      )}
-      {currentView === 'profile' && (
-        <ProfileScreen user={user} onBack={() => setCurrentView('dashboard')} onLogout={handleLogout} />
-      )}
-      {/* Qolgan Viewlar ... */}
-      {currentView === 'exercises' && (
-        <ExercisesList onBack={() => setCurrentView('dashboard')} onStartExercise={(type) => { setSelectedExerciseType(type); setCurrentView('exercise-session'); }} />
-      )}
-      {currentView === 'exercise-session' && selectedExerciseType && (
-        <ExerciseSession exerciseType={selectedExerciseType} onComplete={handleExerciseComplete} />
-      )}
+    <div className="min-h-screen">
+      {currentView === 'dashboard' && <MainDashboard user={user} onNavigate={setCurrentView} onLogout={handleLogout} />}
+      {currentView === 'profile' && <ProfileScreen user={user} onBack={() => setCurrentView('dashboard')} onLogout={handleLogout} />}
+      {currentView === 'exercises' && <ExercisesList onBack={() => setCurrentView('dashboard')} onStartExercise={(t) => { setSelectedExerciseType(t); setCurrentView('exercise-session'); }} />}
+      {currentView === 'exercise-session' && selectedExerciseType && <ExerciseSession exerciseType={selectedExerciseType} onComplete={handleExerciseComplete} />}
       {currentView === 'statistics' && <Statistics onBack={() => setCurrentView('dashboard')} />}
       {currentView === 'literature' && <Literature onBack={() => setCurrentView('dashboard')} />}
       {currentView === 'mock-test' && <MockTest onComplete={() => setCurrentView('dashboard')} />}
