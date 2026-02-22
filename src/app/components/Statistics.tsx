@@ -1,238 +1,87 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Target, Check, X, BarChart3, Award, Loader2, Calendar } from 'lucide-react';
-import { Button } from './ui/button';
-import { supabase } from '../../supabase';
+import { ChevronLeft, BarChart2, Flame, Award, Star, TrendingUp } from 'lucide-react';
 
 interface StatisticsProps {
+  user: { 
+    streak: number; 
+    learnedWords: number; 
+    coins: number;
+  };
   onBack: () => void;
 }
 
-type TimePeriod = '7days' | '30days' | '90days' | '1year' | 'all';
-
-interface StatResult {
-  id: number;
-  exercise_type: string;
-  total_questions: number;
-  correct_answers: number;
-  accuracy: number;
-  created_at: string;
-}
-
-export default function Statistics({ onBack }: StatisticsProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('all');
-  const [loading, setLoading] = useState(true);
-  
-  // Ma'lumotlar
-  const [results, setResults] = useState<StatResult[]>([]);
-  const [stats, setStats] = useState({ total: 0, correct: 0, incorrect: 0 });
-  const [mockTests, setMockTests] = useState<StatResult[]>([]); // Milliy sertifikat natijalari
-
-  useEffect(() => {
-    async function fetchStats() {
-      setLoading(true);
-      const userPhone = localStorage.getItem('userPhone');
-      
-      if (userPhone) {
-        // 1. Bazadan hamma natijalarni olish
-        const { data, error } = await supabase
-          .from('user_results')
-          .select('*')
-          .eq('user_phone', userPhone)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error("Statistika yuklashda xato:", error);
-        } else if (data) {
-          setResults(data);
-          
-          // 2. Mock Testlarni alohida ajratib olish
-          const mocks = data.filter(item => item.exercise_type === 'mock_test');
-          setMockTests(mocks);
-
-          // 3. Umumiy hisob-kitoblar (Faqat oddiy mashqlar uchun)
-          let t = 0, c = 0, inc = 0;
-          data.forEach(item => {
-            if (item.exercise_type !== 'mock_test') {
-              t += item.total_questions;
-              c += item.correct_answers;
-              inc += (item.total_questions - item.correct_answers);
-            }
-          });
-          setStats({ total: t, correct: c, incorrect: inc });
-        }
-      }
-      setLoading(false);
-    }
-    fetchStats();
-  }, [selectedPeriod]); // Kelajakda period bo'yicha filter qilish mumkin
-
-  const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-
-  // Rash modeli bo'yicha darajani aniqlash
-  const getLevel = (percent: number) => {
-    if (percent >= 86) return { level: 'A+', color: 'text-blue-600', bg: 'bg-blue-100' };
-    if (percent >= 71) return { level: 'A', color: 'text-blue-500', bg: 'bg-blue-50' };
-    if (percent >= 61) return { level: 'B+', color: 'text-green-600', bg: 'bg-green-100' };
-    if (percent >= 56) return { level: 'B', color: 'text-green-500', bg: 'bg-green-50' };
-    if (percent >= 50) return { level: 'C+', color: 'text-yellow-600', bg: 'bg-yellow-100' };
-    if (percent >= 46) return { level: 'C', color: 'text-yellow-500', bg: 'bg-yellow-50' };
-    return { level: 'Dárejesiz', color: 'text-red-600', bg: 'bg-red-50' };
-  };
-
-  const periods = [
-    { id: '7days' as TimePeriod, label: '7 Kún' },
-    { id: '30days' as TimePeriod, label: '30 Kún' },
-    { id: '90days' as TimePeriod, label: '90 Kún' },
-    { id: '1year' as TimePeriod, label: '1 Jıl' },
-    { id: 'all' as TimePeriod, label: 'Hámmesi' },
+export default function Statistics({ user, onBack }: StatisticsProps) {
+  // Haftalik kunlar uchun namunaviy ma'lumot (buni keyinchalik bazaga ulaymiz)
+  const weeklyActivity = [
+    { day: 'Dsh', val: 40 }, { day: 'Ssh', val: 70 }, { day: 'Chsh', val: 50 },
+    { day: 'Psh', val: 90 }, { day: 'Jum', val: 60 }, { day: 'Shn', val: 80 }, { day: 'Ysh', val: 30 }
   ];
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Loader2 className="animate-spin text-indigo-600 w-12 h-12" />
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={onBack} className="p-2">
-              <ArrowLeft className="w-6 h-6" />
-            </Button>
-            <h1 className="text-xl font-bold text-gray-800">Meniń Statistikam</h1>
+    <div className="min-h-screen bg-[#F5EEDC] font-sans pb-10">
+      {/* HEADER */}
+      <div className="bg-[#2EB8A6] pt-12 pb-10 px-6 rounded-b-[50px] shadow-lg relative">
+        <button onClick={onBack} className="absolute top-12 left-6 p-2.5 bg-white/20 rounded-2xl text-white backdrop-blur-md active:scale-90 transition-all border border-white/30">
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <h2 className="text-center text-white font-black text-xl uppercase tracking-widest pt-2">Jetistikler</h2>
+      </div>
+
+      <main className="px-6 -mt-6 space-y-6">
+        {/* ASOSIY KO'RSATKICHLAR */}
+        <div className="bg-white rounded-[35px] p-6 shadow-sm border-b-[6px] border-[#E8DFCC] grid grid-cols-3 gap-2">
+          <div className="flex flex-col items-center">
+            <Flame className="w-6 h-6 text-[#FF9500] mb-1" />
+            <span className="font-black text-[#2C4A44]">{user.streak}</span>
+            <span className="text-[9px] font-bold text-[#8DA6A1] uppercase">Streak</span>
+          </div>
+          <div className="flex flex-col items-center border-x border-gray-100">
+            <Award className="w-6 h-6 text-[#2EB8A6] mb-1" />
+            <span className="font-black text-[#2C4A44]">{user.learnedWords}</span>
+            <span className="text-[9px] font-bold text-[#8DA6A1] uppercase">Sózler</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <Star className="w-6 h-6 text-[#F4C150] mb-1" />
+            <span className="font-black text-[#2C4A44]">{user.coins}</span>
+            <span className="text-[9px] font-bold text-[#8DA6A1] uppercase">Coinlar</span>
           </div>
         </div>
-      </header>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        
-        {/* 🌟 1. MILLIY SERTIFIKAT (MOCK TEST) NATIJALARI 🌟 */}
-        {mockTests.length > 0 && (
-          <div className="mb-8">
-            <h2 className="font-bold text-xl mb-4 text-indigo-900 flex items-center">
-              <Award className="mr-2 w-6 h-6 text-indigo-600" /> Milliy Sertifikat Nátiyjeleri
-            </h2>
-            <div className="space-y-4">
-              {mockTests.map((item) => {
-                const resLevel = getLevel(item.accuracy);
-                return (
-                  <div key={item.id} className="bg-white rounded-2xl p-6 shadow-md border-l-4 border-indigo-500 flex flex-col md:flex-row items-start md:items-center justify-between">
-                    <div className="mb-4 md:mb-0">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase">
-                          Rásmiy Imtixan
-                        </span>
-                        <span className="text-sm text-gray-500 flex items-center font-medium">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          {new Date(item.created_at).toLocaleString('uz-UZ', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' })}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-800">
-                        Durıs: {item.correct_answers} / {item.total_questions}
-                      </h3>
-                    </div>
-
-                    <div className="flex items-center space-x-4 bg-gray-50 p-3 rounded-xl">
-                      <div className="text-center px-4 border-r border-gray-200">
-                        <p className="text-sm text-gray-500 font-medium uppercase">Ózlestiriw</p>
-                        <p className="text-2xl font-black text-indigo-600">{item.accuracy}%</p>
-                      </div>
-                      <div className={`text-center px-4 rounded-lg ${resLevel.bg} ${resLevel.color}`}>
-                        <p className="text-sm font-semibold uppercase opacity-80">Dáreje</p>
-                        <p className="text-3xl font-black">{resLevel.level}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        {/* HAFTALIK GRAFIK */}
+        <div className="bg-white rounded-[35px] p-6 shadow-sm border-b-[6px] border-[#E8DFCC]">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-black text-[#2C4A44] uppercase text-sm flex items-center">
+              <TrendingUp className="w-4 h-4 mr-2 text-[#2EB8A6]" /> Haftalıq belsendilik
+            </h3>
           </div>
-        )}
-
-        {/* --- TIME PERIOD SELECTOR --- */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="font-bold text-lg mb-4 text-gray-700">Ápiwayı shınıǵıwlar dáwiri</h2>
-          <div className="flex flex-wrap gap-2">
-            {periods.map((period) => (
-              <button
-                key={period.id}
-                onClick={() => setSelectedPeriod(period.id)}
-                className={`
-                  px-6 py-3 rounded-xl font-medium transition-all
-                  ${selectedPeriod === period.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
-                `}
-              >
-                {period.label}
-              </button>
+          <div className="flex justify-between items-end h-32 px-2">
+            {weeklyActivity.map((item, idx) => (
+              <div key={idx} className="flex flex-col items-center group">
+                <div 
+                  className="w-3 bg-[#E6F4F1] rounded-full relative overflow-hidden flex items-end"
+                  style={{ height: '100px' }}
+                >
+                  <div 
+                    className="w-full bg-[#2EB8A6] rounded-full transition-all duration-1000 group-hover:bg-[#FF9500]"
+                    style={{ height: `${item.val}%` }}
+                  />
+                </div>
+                <span className="text-[10px] font-bold text-[#8DA6A1] mt-2 uppercase">{item.day}</span>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* --- STAT CARDLAR --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Total Questions */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-lg text-gray-600 mb-2">Jámi sorawlar</h3>
-                <p className="text-4xl font-black text-gray-800">{stats.total}</p>
-              </div>
-              <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center">
-                <Target className="w-8 h-8 text-indigo-500" />
-              </div>
-            </div>
+        {/* DARAXT EKISH (SIMVOLIK) */}
+        <div className="bg-[#E6F4F1] rounded-[35px] p-6 border-b-[6px] border-[#D1EBE6] flex items-center justify-between">
+          <div className="max-w-[60%]">
+            <h4 className="font-black text-[#2C4A44] text-lg leading-tight mb-2">Bilim tereklerin suwarıwdı dawam et!</h4>
+            <p className="text-[#5A7A74] text-xs font-bold leading-relaxed">Hár bir jańa sóz — bul seniń keleshegińe qoyılǵan bir qádem.</p>
           </div>
-
-          {/* Accuracy */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-lg text-gray-600 mb-2">Ulıwma Durıslıq</h3>
-                <p className="text-4xl font-black text-indigo-600">{accuracy}%</p>
-              </div>
-              <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center">
-                <BarChart3 className="w-8 h-8 text-indigo-500" />
-              </div>
-            </div>
-          </div>
-
-          {/* Correct Answers */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-lg text-gray-600 mb-2">Durıs juwaplar</h3>
-                <p className="text-4xl font-black text-green-500">{stats.correct}</p>
-              </div>
-              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
-                <Check className="w-8 h-8 text-green-500" />
-              </div>
-            </div>
-          </div>
-
-          {/* Incorrect Answers */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-lg text-gray-600 mb-2">Qáte juwaplar</h3>
-                <p className="text-4xl font-black text-red-500">{stats.incorrect}</p>
-                {stats.incorrect > 0 && (
-                  <button className="text-sm text-red-400 mt-2 hover:text-red-600 font-medium">
-                    Tapsırmalar ústinde islew →
-                  </button>
-                )}
-              </div>
-              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
-                <X className="w-8 h-8 text-red-500" />
-              </div>
-            </div>
+          <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-inner">
+             <BarChart2 className="w-10 h-10 text-[#2EB8A6] opacity-40" />
           </div>
         </div>
-
-      </div>
+      </main>
     </div>
   );
 }
