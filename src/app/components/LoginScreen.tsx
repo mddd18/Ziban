@@ -5,33 +5,29 @@ import { Label } from './ui/label';
 import { supabase } from '../../supabase';
 import { Loader2 } from 'lucide-react'; 
 
+// Logotipni chaqiramiz
+import logoImage from './ziban.jpg'; 
+
 interface LoginScreenProps {
   onLogin: (user: { firstName: string; lastName: string; phone: string; coins: number; isPremium?: boolean }) => void;
 }
 
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [isRegistering, setIsRegistering] = useState(false);
-  // 👈 Default holatda +998 turadi
   const [phone, setPhone] = useState('+998'); 
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 📞 Telefon raqamini to'g'ri kiritishni nazorat qiluvchi funksiya
+  // Telefon raqami formati
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let input = e.target.value;
-    
-    // Agar +998 ni o'chirib yubormoqchi bo'lsa, qaytarib qo'yamiz
     if (input.length < 4 || !input.startsWith('+998')) {
       setPhone('+998');
       return;
     }
-    
-    // Faqatgina raqamlarni (0-9) qoldiramiz va bo'shliqlarni olib tashlaymiz
     const numbersOnly = input.slice(4).replace(/[^0-9]/g, '');
-    
-    // Telefon raqam uzunligini cheklaymiz (+998 dan keyin faqat 9 ta raqam)
     if (numbersOnly.length <= 9) {
       setPhone('+998' + numbersOnly);
     }
@@ -48,7 +44,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     
     try {
       if (isRegistering) {
-        // --- REGISTRATSIYA ---
         const { data, error } = await supabase
           .from('users')
           .insert([{ 
@@ -68,7 +63,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           onLogin({ firstName, lastName, phone: phone, coins: 0, isPremium: false });
         }
       } else {
-        // --- LOGIN ---
         const { data, error } = await supabase
           .from('users')
           .select('*')
@@ -98,134 +92,123 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    // 🔤 Shriftni 'Nunito' (yumaloq va chiroyli) shriftiga moslashtiramiz
-    <div 
-      className="min-h-screen bg-[#F0F4F8] flex items-center justify-center p-4 relative overflow-hidden" 
-      style={{ fontFamily: '"Nunito", "Quicksand", sans-serif' }}
-    >
-      <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-yellow-400/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl animate-pulse delay-700"></div>
-      <div className="absolute top-[20%] right-[10%] w-40 h-40 bg-green-400/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-
-      <div className="w-full max-w-md z-10 relative">
-        <div className="bg-white rounded-[40px] shadow-xl p-8 border-[3px] border-gray-100">
+    // FON: Apple uchun xos bo'lgan toza, ochiq kulrang fon (#F5F5F7)
+    <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-blue-200">
+      
+      {/* KARTA: Yumshoq soya, shisha effekti va ingichka hoshiya */}
+      <div className="w-full max-w-[420px] bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.04)] border border-white/60 p-8 sm:p-10 transition-all duration-500">
+        
+        {/* HEADER / LOGO QISMI */}
+        <div className="text-center mb-10">
+          {/* Soya va ortiqcha bezaklarsiz, toza logotip */}
+          <div className="w-24 h-24 mx-auto mb-6 bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] p-1 flex items-center justify-center overflow-hidden">
+            <img 
+              src={logoImage} 
+              alt="Ziyban Logo" 
+              className="w-full h-full object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          </div>
           
-          <div className="text-center mb-10">
-            {/* 🖼 SIZNING LOGOTIPINGIZ */}
-            <div className="w-28 h-28 bg-white rounded-[28px] mx-auto mb-6 shadow-md border border-gray-100 relative z-10 overflow-hidden flex items-center justify-center p-2">
-              <img 
-                src="/ziban.jpg" 
-                alt="Ziyban Logo" 
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  // Agar rasm topilmasa, vaqtinchalik xabar chiqadi
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
+          <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight mb-2">
+            ZIYBAN
+          </h1>
+          <p className="text-[15px] text-gray-500 font-medium">
+            Milliy sertifikatqa tayyarlıq
+          </p>
+        </div>
+
+        {/* FORMA */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          
+          <div className="space-y-4">
+            {/* INPUT 1: Telefon */}
+            <div>
+              <Label htmlFor="phone" className="sr-only">Telefon nomer</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={handlePhoneChange}
+                required
+                className="w-full h-14 bg-[#F2F2F7] hover:bg-[#E5E5EA] focus:bg-white border-transparent focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 rounded-2xl px-5 text-[17px] text-gray-900 font-medium transition-all placeholder:text-gray-400 outline-none"
               />
             </div>
-            
-            <h1 className="text-4xl font-black text-gray-800 mb-3 tracking-tight">
-              ZIYBAN
-            </h1>
-            {/* 📝 YANGILANGAN TEKST */}
-            <p className="text-indigo-500 font-bold text-lg leading-snug px-4">
-              Milliy sertifikatqa biz menen birgelikte tayarlanıń
-            </p>
-          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-5">
-              <div>
-                <Label htmlFor="phone" className="text-gray-600 font-extrabold text-sm uppercase tracking-wider ml-4 mb-2 block">
-                  Telefon nomer
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  required
-                  className="h-14 px-6 rounded-2xl border-2 border-gray-300 bg-gray-50 text-xl font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:bg-white transition-all tracking-wider"
-                />
-              </div>
-
-              {isRegistering && (
-                <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-4">
-                  <div>
-                    <Label htmlFor="firstName" className="text-gray-600 font-extrabold text-sm uppercase tracking-wider ml-4 mb-2 block">Atı</Label>
-                    <Input
-                      id="firstName"
-                      type="text"
-                      placeholder="Atıńız"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                      className="h-14 px-5 rounded-2xl border-2 border-gray-300 bg-gray-50 text-lg font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:bg-white transition-all"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="lastName" className="text-gray-600 font-extrabold text-sm uppercase tracking-wider ml-4 mb-2 block">Familiya</Label>
-                    <Input
-                      id="lastName"
-                      type="text"
-                      placeholder="Familiyańız"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                      className="h-14 px-5 rounded-2xl border-2 border-gray-300 bg-gray-50 text-lg font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:bg-white transition-all"
-                    />
-                  </div>
+            {/* INPUT 2 & 3: Ism va Familiya (Faqat registratsiyada) */}
+            {isRegistering && (
+              <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div>
+                  <Label htmlFor="firstName" className="sr-only">Atı</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="Atı"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    className="w-full h-14 bg-[#F2F2F7] hover:bg-[#E5E5EA] focus:bg-white border-transparent focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 rounded-2xl px-5 text-[17px] text-gray-900 font-medium transition-all outline-none placeholder:text-gray-400"
+                  />
                 </div>
-              )}
-
-              <div>
-                <Label htmlFor="password" className="text-gray-600 font-extrabold text-sm uppercase tracking-wider ml-4 mb-2 block">
-                  Parol
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-14 px-6 rounded-2xl border-2 border-gray-300 bg-gray-50 text-2xl font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:bg-white transition-all tracking-widest text-center"
-                />
+                <div>
+                  <Label htmlFor="lastName" className="sr-only">Familiya</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Familiya"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    className="w-full h-14 bg-[#F2F2F7] hover:bg-[#E5E5EA] focus:bg-white border-transparent focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 rounded-2xl px-5 text-[17px] text-gray-900 font-medium transition-all outline-none placeholder:text-gray-400"
+                  />
+                </div>
               </div>
+            )}
+
+            {/* INPUT 4: Parol */}
+            <div>
+              <Label htmlFor="password" className="sr-only">Parol</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Parol"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full h-14 bg-[#F2F2F7] hover:bg-[#E5E5EA] focus:bg-white border-transparent focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 rounded-2xl px-5 text-[17px] text-gray-900 font-medium transition-all outline-none placeholder:text-gray-400 tracking-widest"
+              />
             </div>
-
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className={`
-                w-full h-16 text-xl font-black rounded-2xl transition-all transform
-                text-white flex items-center justify-center tracking-wide
-                border-b-[6px] active:border-b-0 active:translate-y-[6px]
-                disabled:opacity-70 disabled:cursor-not-allowed
-                ${isRegistering 
-                  ? 'bg-green-500 border-green-700 hover:bg-green-400'  
-                  : 'bg-indigo-500 border-indigo-700 hover:bg-indigo-400' 
-                }
-              `}
-            >
-              {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : (isRegistering ? 'BASLAW! 🚀' : 'KIRIW')}
-            </Button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <button
-              type="button"
-              onClick={() => setIsRegistering(!isRegistering)}
-              className="text-gray-500 hover:text-indigo-600 font-extrabold text-sm uppercase tracking-wider transition-colors border-2 border-transparent hover:border-indigo-100 px-4 py-2 rounded-xl"
-            >
-              {isRegistering ? 'Mende akkaunt bar. KIRIW' : 'Jańa akkaunt ashıw'}
-            </button>
           </div>
+
+          {/* ASOSIY TUGMA: Apple Blue (#007AFF) rangi va silliq UI */}
+          <Button 
+            type="submit" 
+            disabled={loading}
+            className="w-full h-14 mt-2 bg-[#007AFF] hover:bg-[#0066CC] active:scale-[0.98] text-white rounded-2xl text-[17px] font-semibold transition-all shadow-[0_4px_14px_rgba(0,122,255,0.3)] disabled:opacity-50 disabled:shadow-none"
+          >
+            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isRegistering ? 'Dawam etiw' : 'Kiriw')}
+          </Button>
+        </form>
+
+        {/* QOSHIMCHA TUGMA: Toza matn ko'rinishida */}
+        <div className="mt-8 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              setPassword('');
+            }}
+            className="text-[#007AFF] hover:text-[#0056B3] text-[15px] font-medium transition-colors"
+          >
+            {isRegistering ? 'Mende akkaunt bar. Kiriw' : 'Jańa akkaunt ashıw'}
+          </button>
         </div>
         
-        <p className="text-center text-gray-400 text-sm mt-6 font-bold">
-          © 2024 ZIYBAN. Qaraqalpaqstan Respublikası.
-        </p>
+      </div>
+
+      {/* FOOTER TEXT */}
+      <div className="absolute bottom-8 text-center w-full text-[13px] text-gray-400 font-medium">
+        ZIYBAN © {new Date().getFullYear()}
       </div>
     </div>
   );
