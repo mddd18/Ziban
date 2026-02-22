@@ -1,112 +1,111 @@
-import { ArrowLeft, Target } from 'lucide-react';
-import { Button } from './ui/button';
-import { ExerciseType } from '../App';
+import { ChevronLeft, BookOpen, MessageSquare, Zap, Layout, ArrowRight, Star } from 'lucide-react';
 
 interface ExercisesListProps {
   onBack: () => void;
-  onStartExercise: (type: ExerciseType) => void;
+  onStartExercise: (type: 'definition' | 'translation' | 'terms') => void;
 }
 
 export default function ExercisesList({ onBack, onStartExercise }: ExercisesListProps) {
   const exercises = [
-    {
-      type: 'definition' as ExerciseType,
-      title: 'Terminlerdine shıńıw',
-      description: 'Terminlerdine hám olardıń mánislerine shıńıń',
-      color: 'from-indigo-500 to-purple-500'
+    { 
+      id: 'definition', 
+      title: 'Táripler', 
+      desc: 'Sózlerdiń mánisin tabıń', 
+      icon: <BookOpen className="w-8 h-8" />, 
+      color: 'text-emerald-500', 
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-200',
+      shadow: 'shadow-emerald-100'
     },
-    {
-      type: 'translation' as ExerciseType,
-      title: 'Aúdarma shıńıǵıwları',
-      description: 'Sózlerdi tarjıma etiw ústinde jumıs',
-      color: 'from-purple-500 to-pink-500'
+    { 
+      id: 'translation', 
+      title: 'Awdarmalar', 
+      desc: 'Tildan-tilge awdarın', 
+      icon: <MessageSquare className="w-8 h-8" />, 
+      color: 'text-amber-500', 
+      bg: 'bg-amber-50',
+      border: 'border-amber-200',
+      shadow: 'shadow-amber-100'
+    },
+    { 
+      id: 'terms', 
+      title: 'Terminler', 
+      desc: 'Kásiplik terminler', 
+      icon: <Zap className="w-8 h-8" />, 
+      color: 'text-indigo-500', 
+      bg: 'bg-indigo-50',
+      border: 'border-indigo-200',
+      shadow: 'shadow-indigo-100'
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={onBack}
-              className="p-2"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </Button>
-            <h1 className="text-xl font-bold">Shınıǵıwlar</h1>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F5EEDC] font-sans pb-12 flex flex-col">
+      {/* 🟢 HEADER SECTION */}
+      <div className="bg-[#2EB8A6] pt-14 pb-20 px-6 rounded-b-[60px] shadow-lg relative text-center">
+        <button 
+          onClick={onBack} 
+          className="absolute top-12 left-6 p-2.5 bg-white/20 rounded-2xl text-white backdrop-blur-md active:scale-90 border border-white/30"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <h2 className="text-white font-black text-2xl uppercase tracking-[0.2em] pt-2">Shinıǵıwlar</h2>
+        <p className="text-white/70 font-bold text-xs mt-1 uppercase tracking-widest">Bilimińdi sına hám jetilis</p>
+      </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Target className="w-10 h-10 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Shınıǵıw túrin tańlań
-          </h2>
-          <p className="text-gray-600">
-            Ház túrli shınıǵıwlar menen biliwińizdi sınań
-          </p>
+      {/* ⚪️ ASOSIY RO'YXAT */}
+      <main className="px-6 -mt-10 space-y-6 relative z-10 flex-1">
+        
+        {/* REKLAMA YOKI STATUS KARTASI */}
+        <div className="bg-white/40 backdrop-blur-sm p-4 rounded-[30px] border border-white/60 flex items-center justify-between px-6 mb-8">
+           <div className="flex items-center space-x-3">
+              <Star className="w-5 h-5 text-[#F4C150] fill-[#F4C150]" />
+              <span className="text-[#2C4A44] font-black text-xs uppercase tracking-tighter">Hámme shinıǵıwlar ashıq</span>
+           </div>
+           <div className="h-2 w-16 bg-[#2EB8A6]/20 rounded-full overflow-hidden">
+              <div className="bg-[#2EB8A6] h-full w-2/3"></div>
+           </div>
         </div>
 
-        <div className="space-y-4">
-          {exercises.map((exercise) => (
+        <div className="space-y-5">
+          {exercises.map((ex) => (
             <button
-              key={exercise.type}
-              onClick={() => onStartExercise(exercise.type)}
-              className="w-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
+              key={ex.id}
+              onClick={() => onStartExercise(ex.id as any)}
+              className="w-full bg-white rounded-[40px] p-6 shadow-[0_10px_20px_rgba(0,0,0,0.03)] border-b-[8px] border-[#E8DFCC] flex items-center group active:translate-y-2 active:border-b-0 transition-all text-left relative overflow-hidden"
             >
-              <div className="flex items-center p-6">
-                <div className={`w-16 h-16 bg-gradient-to-br ${exercise.color} rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition-transform`}>
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="font-bold text-lg text-gray-900 mb-1">
-                    {exercise.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    {exercise.description}
-                  </p>
-                </div>
-                <svg className="w-6 h-6 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+              {/* Orqa fondagi naqsh */}
+              <div className={`absolute -right-4 -bottom-4 w-24 h-24 ${ex.bg} rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700`}></div>
+
+              {/* Ikonka */}
+              <div className={`w-16 h-16 ${ex.bg} ${ex.color} rounded-3xl flex items-center justify-center mr-5 shrink-0 shadow-inner border ${ex.border}`}>
+                {ex.icon}
+              </div>
+
+              {/* Matn */}
+              <div className="relative z-10">
+                <h3 className="font-black text-[#2C4A44] text-xl leading-tight mb-1">{ex.title}</h3>
+                <p className="text-[#8DA6A1] text-[10px] font-black uppercase tracking-widest">{ex.desc}</p>
+              </div>
+
+              {/* O'ng tarafdagi strelka */}
+              <div className="ml-auto relative z-10 bg-[#F5EEDC] p-2 rounded-xl text-[#A0B8B4] group-hover:text-[#2EB8A6] group-hover:translate-x-1 transition-all">
+                <ArrowRight className="w-5 h-5" />
               </div>
             </button>
           ))}
         </div>
 
-        {/* Stats Card */}
-        <div className="mt-8 bg-white rounded-xl shadow-md p-6">
-          <div className="text-center">
-            <div className="flex justify-center space-x-8">
-              <div>
-                <p className="text-3xl font-bold text-indigo-600">0</p>
-                <p className="text-sm text-gray-600">Úyrenilgen</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-green-600">0</p>
-                <p className="text-sm text-gray-600">Juwmaqlaw</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-purple-600">0</p>
-                <p className="text-sm text-gray-600">Jámi</p>
-              </div>
-            </div>
-            <p className="mt-4 text-sm text-gray-500">
-              Hámmesi úyrenilgen — shınıǵıwlar random sózlerdi qollanıwdı
-            </p>
-          </div>
+        {/* MOTIVATSIYA QISMI */}
+        <div className="pt-10 pb-6 text-center">
+           <div className="inline-block p-4 bg-indigo-50 rounded-3xl border-2 border-dashed border-indigo-100">
+              <Layout className="w-8 h-8 text-indigo-300 mx-auto mb-2" />
+              <p className="text-[#8DA6A1] font-bold text-[10px] uppercase max-w-[200px] leading-relaxed">
+                Kúnine 15 minut shinıǵıw isle hám nátiyjege eris!
+              </p>
+           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
