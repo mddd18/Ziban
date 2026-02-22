@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, TrendingUp, Calendar, Target, Award, Clock, History } from 'lucide-react';
-import { supabase } from '../supabase';
+import { supabase } from '../../supabase';
 
 interface StatisticsProps {
   user: { streak: number; learnedWords: number; coins: number; phone: string };
