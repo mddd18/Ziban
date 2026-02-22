@@ -8,7 +8,7 @@ import Statistics from './components/Statistics';
 import ProfileScreen from './components/ProfileScreen';
 import Literature from './components/Literature';
 import MockTest from './components/MockTest';
-import Rewards from './components/Rewards';
+import VoucherStore from './components/VoucherStore'; // ✅ Rewards o'rniga VoucherStore
 import LearningCenters from './components/LearningCenters';
 import AdminPanel from './components/AdminPanel';
 import PremiumScreen from './components/PremiumScreen';
@@ -46,9 +46,26 @@ export default function App() {
     }
   }, []);
 
+  // 🪙 TANGALARNI YANGILASH (Do'kon uchun kerak)
+  const handleUpdateCoins = async (newCoins: number) => {
+    if (user) {
+      const { error } = await supabase
+        .from('users')
+        .update({ coins: newCoins })
+        .eq('phone', user.phone);
+      
+      if (!error) {
+        setUser({ ...user, coins: newCoins });
+        const stored = JSON.parse(localStorage.getItem('user') || '{}');
+        localStorage.setItem('user', JSON.stringify({ ...stored, coins: newCoins }));
+      }
+    }
+  };
+
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('userPhone');
     setCurrentView('dashboard');
   };
 
@@ -82,7 +99,7 @@ export default function App() {
         />
       )}
 
-      {/* 4. MASHQ JARAYONI (XATOSIZ) */}
+      {/* 4. MASHQ JARAYONI */}
       {currentView === 'exercise-session' && selectedExerciseType && (
         <ExerciseSession 
           exerciseType={selectedExerciseType} 
@@ -93,7 +110,10 @@ export default function App() {
 
       {/* 5. STATISTIKA */}
       {currentView === 'statistics' && (
-        <Statistics user={user} onBack={() => setCurrentView('dashboard')} />
+        <Statistics 
+          user={{ ...user, phone: user.phone }} 
+          onBack={() => setCurrentView('dashboard')} 
+        />
       )}
 
       {/* 6. ADABIYOTLAR */}
@@ -106,19 +126,12 @@ export default function App() {
         <MockTest onComplete={() => setCurrentView('dashboard')} />
       )}
 
-      {/* 8. MUKOFOTLAR (COINLAR) */}
-     {currentView === 'rewards' && (
-  <Rewards 
-    userCoins={user.coins} 
-    onBack={() => setCurrentView('dashboard')} 
-    onUpdateCoins={(newCoins) => {
-      // Bu funksiya ham App.tsx dagi user state-ni, ham bazani yangilashi kerak
-      handleUpdateCoins(newCoins); 
-    }} 
-  />
-)}
+      {/* 🎁 8. SÓWǴALAR (VAUCHERLAR DÚKÁNI) */}
+      {currentView === 'rewards' && (
+        <VoucherStore onBack={() => setCurrentView('dashboard')} />
+      )}
 
-      {/* 9. O'QUV MARKAZLARI */}
+      {/* 🎓 9. O'QUV MARKAZLARI */}
       {currentView === 'learning-centers' && (
         <LearningCenters 
           userCoins={user.coins} 
@@ -126,18 +139,19 @@ export default function App() {
         />
       )}
 
-      {/* 🛡️ 10. ADMIN PANEL (Endi albatta kiradi!) */}
+      {/* 🛡️ 10. ADMIN PANEL */}
       {currentView === 'admin-panel' && (
         <AdminPanel onBack={() => setCurrentView('dashboard')} />
       )}
 
-      {/* 💎 11. PREMIUM OYNASI */}
+      {/* 💎 11. PREMIUM */}
       {currentView === 'premium' && (
         <PremiumScreen 
           onBack={() => setCurrentView('dashboard')} 
           onUpgradeSuccess={() => setUser({...user, isPremium: true})} 
         />
       )}
+      
     </div>
   );
 }
