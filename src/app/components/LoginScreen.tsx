@@ -1,16 +1,6 @@
 import { useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { supabase } from '../../supabase';
 import { Loader2 } from 'lucide-react'; 
-
-// Logotipni chaqiramiz
-<img 
-  src="/ziban.jpg" 
-  alt="Ziyban Logo" 
-  className="w-full h-full object-contain"
-/>
 
 interface LoginScreenProps {
   onLogin: (user: { firstName: string; lastName: string; phone: string; coins: number; isPremium?: boolean }) => void;
@@ -24,7 +14,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Telefon raqami formati
+  // Telefon formati (+998 va 9 ta raqam)
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let input = e.target.value;
     if (input.length < 4 || !input.startsWith('+998')) {
@@ -75,7 +65,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           .single();
 
         if (error || !data) {
-          alert('Nádurıs parol yamasa nomer! Qaytadan kórıń.');
+          alert('Nádurıs parol yamasa nomer!');
         } else {
           localStorage.setItem('userPhone', phone);
           onLogin({ 
@@ -89,130 +79,102 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       }
     } catch (error: any) {
       console.error("Xatolik:", error.message);
-      alert("Xatolik yuz berdi: " + (error.message.includes("unique") ? "Bul nomer aldınnan dizimnen ótken." : error.message));
+      alert("Xatolik yuz berdi: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    // FON: Apple uchun xos bo'lgan toza, ochiq kulrang fon (#F5F5F7)
-    <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-blue-200">
-      
-      {/* KARTA: Yumshoq soya, shisha effekti va ingichka hoshiya */}
-      <div className="w-full max-w-[420px] bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.04)] border border-white/60 p-8 sm:p-10 transition-all duration-500">
+    // Apple tizim shriftlari va #F5F5F7 fon
+    <div 
+      className="min-h-screen bg-[#F5F5F7] flex items-center justify-center p-4 selection:bg-[#007AFF] selection:text-white"
+      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
+    >
+      {/* Karta: Mutlaqo toza, nozik soya bilan */}
+      <div className="w-full max-w-[400px] bg-white rounded-[28px] p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
         
-        {/* HEADER / LOGO QISMI */}
-        <div className="text-center mb-10">
-          {/* Soya va ortiqcha bezaklarsiz, toza logotip */}
-          <div className="w-24 h-24 mx-auto mb-6 bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] p-1 flex items-center justify-center overflow-hidden">
+        {/* Apple uslubidagi Sarlavha */}
+        <div className="flex flex-col items-center mb-10 text-center">
+          <div className="w-[72px] h-[72px] mb-5 rounded-2xl overflow-hidden shadow-sm border border-gray-100 p-1">
             <img 
-              src={logoImage} 
+              src="/ziban.jpg" 
               alt="Ziyban Logo" 
-              className="w-full h-full object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              className="w-full h-full object-contain rounded-xl"
             />
           </div>
-          
-          <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight mb-2">
-            ZIYBAN
+          <h1 className="text-[26px] font-semibold text-[#1D1D1F] tracking-tight mb-1">
+            Ziyban
           </h1>
-          <p className="text-[15px] text-gray-500 font-medium">
+          <p className="text-[15px] text-[#86868B]">
             Milliy sertifikatqa tayyarlıq
           </p>
         </div>
 
-        {/* FORMA */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          
-          <div className="space-y-4">
-            {/* INPUT 1: Telefon */}
-            <div>
-              <Label htmlFor="phone" className="sr-only">Telefon nomer</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={handlePhoneChange}
-                required
-                className="w-full h-14 bg-[#F2F2F7] hover:bg-[#E5E5EA] focus:bg-white border-transparent focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 rounded-2xl px-5 text-[17px] text-gray-900 font-medium transition-all placeholder:text-gray-400 outline-none"
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-3">
+             {/* Inputlar: Apple'ning klassik och-kulrang foni (#F2F2F7), silliq outline */}
+             <input
+               type="tel"
+               value={phone}
+               onChange={handlePhoneChange}
+               placeholder="Telefon nomer"
+               required
+               className="w-full h-[52px] bg-[#F2F2F7] focus:bg-white border focus:border-[#007AFF] border-transparent rounded-[14px] px-4 text-[17px] text-[#1D1D1F] outline-none transition-colors placeholder-[#86868B]"
+             />
 
-            {/* INPUT 2 & 3: Ism va Familiya (Faqat registratsiyada) */}
-            {isRegistering && (
-              <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div>
-                  <Label htmlFor="firstName" className="sr-only">Atı</Label>
-                  <Input
-                    id="firstName"
+             {isRegistering && (
+                <div className="flex gap-3 animate-in fade-in duration-300">
+                  <input
                     type="text"
-                    placeholder="Atı"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Atı"
                     required
-                    className="w-full h-14 bg-[#F2F2F7] hover:bg-[#E5E5EA] focus:bg-white border-transparent focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 rounded-2xl px-5 text-[17px] text-gray-900 font-medium transition-all outline-none placeholder:text-gray-400"
+                    className="w-full h-[52px] bg-[#F2F2F7] focus:bg-white border focus:border-[#007AFF] border-transparent rounded-[14px] px-4 text-[17px] text-[#1D1D1F] outline-none transition-colors placeholder-[#86868B]"
                   />
-                </div>
-                <div>
-                  <Label htmlFor="lastName" className="sr-only">Familiya</Label>
-                  <Input
-                    id="lastName"
+                  <input
                     type="text"
-                    placeholder="Familiya"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Familiya"
                     required
-                    className="w-full h-14 bg-[#F2F2F7] hover:bg-[#E5E5EA] focus:bg-white border-transparent focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 rounded-2xl px-5 text-[17px] text-gray-900 font-medium transition-all outline-none placeholder:text-gray-400"
+                    className="w-full h-[52px] bg-[#F2F2F7] focus:bg-white border focus:border-[#007AFF] border-transparent rounded-[14px] px-4 text-[17px] text-[#1D1D1F] outline-none transition-colors placeholder-[#86868B]"
                   />
                 </div>
-              </div>
-            )}
+             )}
 
-            {/* INPUT 4: Parol */}
-            <div>
-              <Label htmlFor="password" className="sr-only">Parol</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Parol"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full h-14 bg-[#F2F2F7] hover:bg-[#E5E5EA] focus:bg-white border-transparent focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 rounded-2xl px-5 text-[17px] text-gray-900 font-medium transition-all outline-none placeholder:text-gray-400 tracking-widest"
-              />
-            </div>
+             <input
+               type="password"
+               value={password}
+               onChange={(e) => setPassword(e.target.value)}
+               placeholder="Parol"
+               required
+               className="w-full h-[52px] bg-[#F2F2F7] focus:bg-white border focus:border-[#007AFF] border-transparent rounded-[14px] px-4 text-[17px] text-[#1D1D1F] outline-none transition-colors placeholder-[#86868B] tracking-wide"
+             />
           </div>
 
-          {/* ASOSIY TUGMA: Apple Blue (#007AFF) rangi va silliq UI */}
-          <Button 
-            type="submit" 
+          {/* Tugma: Apple Blue, silliq bosilish effekti, ortiqcha chiziqlarsiz */}
+          <button
+            type="submit"
             disabled={loading}
-            className="w-full h-14 mt-2 bg-[#007AFF] hover:bg-[#0066CC] active:scale-[0.98] text-white rounded-2xl text-[17px] font-semibold transition-all shadow-[0_4px_14px_rgba(0,122,255,0.3)] disabled:opacity-50 disabled:shadow-none"
+            className="w-full h-[52px] mt-2 bg-[#007AFF] hover:bg-[#0066CC] active:scale-[0.98] text-white rounded-[14px] text-[17px] font-semibold transition-all flex items-center justify-center"
           >
-            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isRegistering ? 'Dawam etiw' : 'Kiriw')}
-          </Button>
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isRegistering ? 'Dawam etiw' : 'Kiriw')}
+          </button>
         </form>
 
-        {/* QOSHIMCHA TUGMA: Toza matn ko'rinishida */}
-        <div className="mt-8 text-center">
+        {/* Qo'shimcha havolalar */}
+        <div className="mt-6 text-center">
           <button
             type="button"
-            onClick={() => {
-              setIsRegistering(!isRegistering);
-              setPassword('');
-            }}
-            className="text-[#007AFF] hover:text-[#0056B3] text-[15px] font-medium transition-colors"
+            onClick={() => { setIsRegistering(!isRegistering); setPassword(''); }}
+            className="text-[#007AFF] text-[15px] hover:underline"
           >
             {isRegistering ? 'Mende akkaunt bar. Kiriw' : 'Jańa akkaunt ashıw'}
           </button>
         </div>
         
-      </div>
-
-      {/* FOOTER TEXT */}
-      <div className="absolute bottom-8 text-center w-full text-[13px] text-gray-400 font-medium">
-        ZIYBAN © {new Date().getFullYear()}
       </div>
     </div>
   );
