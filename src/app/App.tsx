@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase'; 
+import { Loader2 } from 'lucide-react';
+
+// Komponentlarni import qilish
 import LoginScreen from './components/LoginScreen';
 import MainDashboard from './components/MainDashboard';
 import ExercisesList from './components/ExercisesList';
@@ -8,7 +11,7 @@ import Statistics from './components/Statistics';
 import ProfileScreen from './components/ProfileScreen';
 import Literature from './components/Literature';
 import MockTest from './components/MockTest';
-import VoucherStore from './components/VoucherStore'; // ✅ Rewards o'rniga VoucherStore
+import VoucherStore from './components/VoucherStore';
 import LearningCenters from './components/LearningCenters';
 import AdminPanel from './components/AdminPanel';
 import PremiumScreen from './components/PremiumScreen';
@@ -23,30 +26,64 @@ interface User {
   isPremium?: boolean;
 }
 
-export type ExerciseType = 'definition' | 'translation' | 'terms';
-
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'exercises' | 'exercise-session' | 'statistics' | 'literature' | 'mock-test' | 'rewards' | 'learning-centers' | 'admin-panel' | 'premium' | 'profile'>('dashboard');
-  const [selectedExerciseType, setSelectedExerciseType] = useState<ExerciseType | null>(null);
+  const [loading, setLoading] = useState(true); 
+  const [currentView, setCurrentView] = useState<string>('dashboard');
+  const [selectedExerciseType, setSelectedExerciseType] = useState<any>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setUser({
-        firstName: parsed.first_name || parsed.firstName,
-        lastName: parsed.last_name || parsed.lastName,
-        phone: parsed.phone,
-        coins: parsed.coins || 0,
-        streak: parsed.streak || 0,
-        learnedWords: parsed.learned_words || 0,
-        isPremium: parsed.is_premium
-      });
-    }
+    const initAuth = async () => {
+      try {
+        // 1. LocalStorage dan barcha kerakli ma'lumotlarni tekshirish
+        const storedUser = localStorage.getItem('user');
+        const userPhone = localStorage.getItem('userPhone');
+
+        if (storedUser && userPhone) {
+          // 2. Avval vaqtinchalik ma'lumotni o'rnatamiz (Login chiqib ketmasligi uchun)
+          const parsed = JSON.parse(storedUser);
+          setUser({
+            firstName: parsed.first_name || parsed.firstName,
+            lastName: parsed.last_name || parsed.lastName,
+            phone: userPhone,
+            coins: parsed.coins || 0,
+            streak: parsed.streak || 0,
+            learnedWords: parsed.learned_words || 0,
+            isPremium: parsed.is_premium
+          });
+
+          // 3. Bazadan eng yangi ma'lumotlarni sinxronizatsiya qilamiz
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('phone', userPhone)
+            .maybeSingle();
+
+          if (data && !error) {
+            const freshUser = {
+              firstName: data.first_name,
+              lastName: data.last_name,
+              phone: data.phone,
+              coins: data.coins || 0,
+              streak: data.streak || 0,
+              learnedWords: data.learned_words || 0,
+              isPremium: data.is_premium
+            };
+            setUser(freshUser);
+            localStorage.setItem('user', JSON.stringify(data));
+          }
+        }
+      } catch (err) {
+        console.error("Auth error:", err);
+      } finally {
+        // 4. Har qanday holatda ham tekshiruv tugagach loadingni to'xtatamiz
+        setLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
-  // 🪙 TANGALARNI YANGILASH (Do'kon uchun kerak)
   const handleUpdateCoins = async (newCoins: number) => {
     if (user) {
       const { error } = await supabase
@@ -63,95 +100,61 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.clear();
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('userPhone');
     setCurrentView('dashboard');
   };
 
-  const handleExerciseComplete = () => {
-    setCurrentView('exercises');
-  };
+  // ✅ BU JUDA MUHIM: Loading vaqtida Loginni ko'rsatmaslik!
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5EEDC]">
+        <Loader2 className="w-12 h-12 text-[#2EB8A6] animate-spin mb-4" />
+        <p className="text-[#8DA6A1] font-black uppercase text-[10px] tracking-widest">Ziyban júklenbekte...</p>
+      </div>
+    );
+  }
 
-  if (!user) return <LoginScreen onLogin={(userData) => setUser(userData)} />;
+  // ✅ Agar loading tugagan bo'lsa va user bo'lmasa, keyin Login chiqadi
+  if (!user) {
+    return (
+      <LoginScreen onLogin={(userData) => {
+        setUser(userData);
+        localStorage.setItem('userPhone', userData.phone);
+        localStorage.setItem('user', JSON.stringify(userData));
+      }} />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5EEDC]">
-      
-      {/* 1. ASOSIY DASHBOARD */}
       {currentView === 'dashboard' && (
-        <MainDashboard user={user} onNavigate={setCurrentView} onLogout={handleLogout} />
+        <MainDashboard user={user} onNavigate={(v: any) => setCurrentView(v)} onLogout={handleLogout} />
       )}
-
-      {/* 2. PROFIL */}
-      {currentView === 'profile' && (
-        <ProfileScreen user={user} onBack={() => setCurrentView('dashboard')} onLogout={handleLogout} />
-      )}
-
-      {/* 3. MASHQLAR RO'YXATI */}
+      
       {currentView === 'exercises' && (
         <ExercisesList 
           onBack={() => setCurrentView('dashboard')} 
-          onStartExercise={(type) => {
-            setSelectedExerciseType(type);
-            setCurrentView('exercise-session');
-          }} 
+          onStartExercise={(type) => { setSelectedExerciseType(type); setCurrentView('exercise-session'); }} 
         />
       )}
 
-      {/* 4. MASHQ JARAYONI */}
       {currentView === 'exercise-session' && selectedExerciseType && (
         <ExerciseSession 
           exerciseType={selectedExerciseType} 
-          onComplete={handleExerciseComplete}
+          onComplete={() => setCurrentView('exercises')}
           onBack={() => setCurrentView('exercises')} 
         />
       )}
 
-      {/* 5. STATISTIKA */}
-      {currentView === 'statistics' && (
-        <Statistics 
-          user={{ ...user, phone: user.phone }} 
-          onBack={() => setCurrentView('dashboard')} 
-        />
-      )}
-
-      {/* 6. ADABIYOTLAR */}
-      {currentView === 'literature' && (
-        <Literature onBack={() => setCurrentView('dashboard')} />
-      )}
-
-      {/* 7. MOCK TEST */}
-      {currentView === 'mock-test' && (
-        <MockTest onComplete={() => setCurrentView('dashboard')} />
-      )}
-
-      {/* 🎁 8. SÓWǴALAR (VAUCHERLAR DÚKÁNI) */}
-      {currentView === 'rewards' && (
-        <VoucherStore onBack={() => setCurrentView('dashboard')} />
-      )}
-
-      {/* 🎓 9. O'QUV MARKAZLARI */}
-      {currentView === 'learning-centers' && (
-        <LearningCenters 
-          userCoins={user.coins} 
-          onBack={() => setCurrentView('dashboard')} 
-        />
-      )}
-
-      {/* 🛡️ 10. ADMIN PANEL */}
-      {currentView === 'admin-panel' && (
-        <AdminPanel onBack={() => setCurrentView('dashboard')} />
-      )}
-
-      {/* 💎 11. PREMIUM */}
-      {currentView === 'premium' && (
-        <PremiumScreen 
-          onBack={() => setCurrentView('dashboard')} 
-          onUpgradeSuccess={() => setUser({...user, isPremium: true})} 
-        />
-      )}
-      
+      {currentView === 'statistics' && <Statistics user={user} onBack={() => setCurrentView('dashboard')} />}
+      {currentView === 'profile' && <ProfileScreen user={user} onBack={() => setCurrentView('dashboard')} onLogout={handleLogout} />}
+      {currentView === 'literature' && <Literature onBack={() => setCurrentView('dashboard')} />}
+      {currentView === 'mock-test' && <MockTest onComplete={() => setCurrentView('dashboard')} />}
+      {currentView === 'rewards' && <VoucherStore onBack={() => setCurrentView('dashboard')} />}
+      {currentView === 'learning-centers' && <LearningCenters userCoins={user.coins} onBack={() => setCurrentView('dashboard')} />}
+      {currentView === 'admin-panel' && <AdminPanel onBack={() => setCurrentView('dashboard')} />}
+      {currentView === 'premium' && <PremiumScreen onBack={() => setCurrentView('dashboard')} onUpgradeSuccess={() => setUser({...user, isPremium: true})} />}
     </div>
   );
 }
