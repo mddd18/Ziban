@@ -1,9 +1,7 @@
-import { Book, Target, BarChart3, FileText, LogOut, Menu, X, Coins, Gift, GraduationCap, Settings, Crown, Lock, ChevronRight, User } from 'lucide-react';
-import { Button } from './ui/button';
 import { useState } from 'react';
+import { Book, Target, FileText, Gift, GraduationCap, Settings, Crown, Lock, User, Flame, Home, Compass, BarChart2 } from 'lucide-react';
 
-// 👈 SHU YERGA O'Z RAQAMINGIZNI YOZING (Masalan: +998901234567)
-const ADMIN_PHONE = "+998913773933"; 
+const ADMIN_PHONE = "+998913773933"; // O'zingizning raqamingizni yozing
 
 interface MainDashboardProps {
   user: { firstName: string; lastName: string; phone: string; coins: number; isPremium?: boolean };
@@ -12,157 +10,182 @@ interface MainDashboardProps {
 }
 
 export default function MainDashboard({ user, onNavigate, onLogout }: MainDashboardProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('home');
 
-  // Telefon raqamini tozalab tekshirish (Admin ekanligini bilish uchun)
   const cleanPhone = (phone: string) => phone.replace(/[^0-9]/g, '');
   const isAdmin = cleanPhone(user.phone) === cleanPhone(ADMIN_PHONE);
 
-  // Menyular ro'yxati (Minimalistik va aniq ranglar bilan)
-  const menuItems = [
-    { id: 'exercises' as const, title: 'Shınıǵıwlar', icon: Target, desc: 'Test & Terminlar', bgColor: 'bg-blue-100', iconColor: 'text-blue-500', isPremiumOnly: false },
-    { id: 'statistics' as const, title: 'Statistika', icon: BarChart3, desc: 'Nátiyjeleriń', bgColor: 'bg-green-100', iconColor: 'text-green-500', isPremiumOnly: false },
-    { id: 'mock-test' as const, title: 'Mock test', icon: FileText, desc: 'Aynıǵa 1 ret', bgColor: 'bg-pink-100', iconColor: 'text-pink-500', isPremiumOnly: true },
-    { id: 'literature' as const, title: 'Ádebiyatlar', icon: Book, desc: 'Oqıw materialları', bgColor: 'bg-purple-100', iconColor: 'text-purple-500', isPremiumOnly: false },
-    { id: 'rewards' as const, title: 'Coinlar alması', icon: Gift, desc: 'Chegirmalar', bgColor: 'bg-yellow-100', iconColor: 'text-yellow-500', isPremiumOnly: true },
-    { id: 'learning-centers' as const, title: 'Oqıw merkezleri', icon: GraduationCap, desc: 'Offlayn oqıw', bgColor: 'bg-teal-100', iconColor: 'text-teal-500', isPremiumOnly: false },
-  ];
-
   return (
-    // Minimalist fon: Och kulrang
-    <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20" style={{ fontFamily: '"Nunito", "Quicksand", sans-serif' }}>
+    // ASOSIY FON: Osmon va qum rangli gradient
+    <div className="min-h-screen bg-gradient-to-b from-[#E6F4F1] to-[#F5EEDC] font-sans pb-24 selection:bg-[#2EB8A6] selection:text-white" style={{ fontFamily: '"Nunito", "Quicksand", sans-serif' }}>
       
-      {/* 🌟 HEADER: Qalin hoshiyali, oq va toza */}
-      <header className="bg-white sticky top-0 z-20 border-b-[4px] border-gray-200 px-4 py-3 md:py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+      {/* 🌟 HEADER QISMI */}
+      <header className="px-6 pt-8 pb-4">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-black text-[#2C4A44] tracking-tight">
+              Sálem, {user.firstName}!
+            </h1>
+            <p className="text-[#5A7A74] font-bold text-sm mt-1">
+              Qaraqalpaqsha úyreniwdi dawam etemiz
+            </p>
+          </div>
           
-          {/* Chap tomon: Profil */}
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 md:w-14 md:h-14 bg-gray-100 rounded-2xl border-2 border-gray-200 flex items-center justify-center relative shadow-sm">
-              <User className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
-              {/* Premium Toji */}
-              {user.isPremium && (
-                <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1 shadow-sm border-2 border-white">
+          <div className="relative">
+             <div className="w-14 h-14 bg-white rounded-full border-4 border-[#2EB8A6] p-1 shadow-md cursor-pointer" onClick={onLogout}>
+               <div className="w-full h-full bg-[#E6F4F1] rounded-full flex items-center justify-center">
+                 <User className="w-6 h-6 text-[#2EB8A6]" />
+               </div>
+             </div>
+             {user.isPremium && (
+                <div className="absolute -bottom-1 -right-1 bg-[#F4C150] rounded-full p-1 border-2 border-white shadow-sm">
                   <Crown className="w-4 h-4 text-white" />
                 </div>
               )}
-            </div>
-            <div>
-              <h1 className="font-black text-gray-800 text-base md:text-xl tracking-tight leading-none">
-                {user.firstName}
-              </h1>
-              <p className={`text-xs md:text-sm font-extrabold mt-1 ${user.isPremium ? 'text-yellow-500' : 'text-gray-400'}`}>
-                {user.isPremium ? 'PRO Paydalanıwshı' : 'Ápiwayı oqıwshı'}
-              </p>
-            </div>
-          </div>
-
-          {/* O'ng tomon: Tangalar va Menyu */}
-          <div className="flex items-center space-x-3">
-            <div 
-              onClick={() => !user.isPremium && onNavigate('premium')}
-              className={`flex items-center space-x-1 md:space-x-2 px-3 py-2 md:px-5 md:py-3 rounded-2xl border-b-[4px] active:border-b-0 active:translate-y-1 transition-all cursor-pointer ${
-                user.isPremium 
-                  ? 'bg-yellow-100 border-yellow-300 text-yellow-600' 
-                  : 'bg-gray-100 border-gray-200 text-gray-400'
-              }`}
-            >
-              <Coins className="w-5 h-5 md:w-6 md:h-6" />
-              <span className="font-black text-base md:text-lg">{user.isPremium ? (user.coins || 0) : 'PRO'}</span>
-              {!user.isPremium && <Lock className="w-3 h-3 ml-1 md:w-4 md:h-4" />}
-            </div>
-
-            <button 
-              onClick={() => setMenuOpen(!menuOpen)} 
-              className="p-3 bg-gray-100 text-gray-600 rounded-2xl border-b-[4px] border-gray-200 active:border-b-0 active:translate-y-1 transition-all"
-            >
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
           </div>
         </div>
 
-        {/* Ochiladigan menyu */}
-        {menuOpen && (
-          <div className="max-w-5xl mx-auto mt-4 pt-4 border-t-2 border-dashed border-gray-200 animate-in slide-in-from-top-2">
-            <Button variant="ghost" onClick={onLogout} className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-lg h-14 rounded-2xl">
-              <LogOut className="w-5 h-5 mr-3" /> Akkaunttan shıǵıw
-            </Button>
+        {/* STATISTIKA (Streak va Coinlar) */}
+        <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-md rounded-2xl p-3 shadow-[0_4px_12px_rgba(46,184,166,0.1)] border border-white/80">
+          <div className="flex items-center bg-[#FFF4E5] px-4 py-2 rounded-xl flex-1 justify-center">
+            <Flame className="w-6 h-6 text-[#FF9500] mr-2" />
+            <span className="font-black text-[#FF9500] text-lg">12</span>
+            <span className="text-xs font-bold text-[#FF9500]/70 ml-1 uppercase">Kún</span>
           </div>
-        )}
+          
+          <button 
+            onClick={() => !user.isPremium && onNavigate('premium')}
+            className={`flex items-center px-4 py-2 rounded-xl flex-1 justify-center transition-transform active:scale-95 ${
+              user.isPremium ? 'bg-[#FFF9D6] cursor-default' : 'bg-[#E6F4F1] hover:bg-[#D1EBE6]'
+            }`}
+          >
+            <div className="w-6 h-6 bg-[#F4C150] rounded-full flex items-center justify-center mr-2 shadow-sm border border-[#E0B042]">
+              <span className="text-white text-xs font-black">C</span>
+            </div>
+            <span className={`font-black text-lg ${user.isPremium ? 'text-[#D4A017]' : 'text-[#2EB8A6]'}`}>
+              {user.isPremium ? user.coins : 'PRO'}
+            </span>
+            {!user.isPremium && <Lock className="w-4 h-4 text-[#2EB8A6] ml-2 opacity-50" />}
+          </button>
+        </div>
       </header>
 
-      {/* 🌟 ASOSIY QISM */}
-      <main className="max-w-5xl mx-auto px-4 mt-8 md:mt-10">
+      {/* 🌟 ASOSIY KONTENT */}
+      <main className="px-6 space-y-6">
         
-        {/* PREMIUM BANNER (Qalin, yorqin, o'yinqaroq) */}
-        {!user.isPremium && (
-          <div 
-            onClick={() => onNavigate('premium')}
-            className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-[32px] p-6 mb-10 text-white shadow-sm border-b-[6px] border-orange-600 active:border-b-0 active:translate-y-[6px] transition-all flex items-center justify-between cursor-pointer group"
-          >
-            <div className="flex items-center">
-              <div className="w-16 h-16 bg-white/20 rounded-[20px] flex items-center justify-center mr-5 backdrop-blur-sm border-2 border-white/30 group-hover:scale-110 transition-transform">
-                <Crown className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-black text-white mb-1 drop-shadow-sm">PRO Tarıyfı</h3>
-                <p className="text-yellow-100 font-bold text-sm md:text-base">Sheklewsiz imkaniyatlardı ashıń!</p>
+        {/* KATTA KARTA: Davom etish */}
+        <div 
+          onClick={() => onNavigate('exercises')}
+          className="bg-white rounded-[32px] p-6 shadow-[0_8px_24px_rgba(44,74,68,0.06)] border-b-[6px] border-[#E8DFCC] relative overflow-hidden cursor-pointer active:border-b-0 active:translate-y-[6px] transition-all group"
+        >
+          {/* Orqa fondagi naqshlar uchun joy */}
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#F5EEDC]/50 rounded-full group-hover:scale-110 transition-transform"></div>
+          
+          <p className="text-[#8DA6A1] font-extrabold text-sm uppercase tracking-wider mb-2 relative z-10">Dawam etiw</p>
+          <h2 className="text-2xl font-black text-[#2C4A44] mb-4 relative z-10">Sózler hám Terminler</h2>
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-full bg-[#F5EEDC] h-4 rounded-full mr-4 overflow-hidden">
+              <div className="bg-[#2EB8A6] h-full w-2/5 rounded-full relative">
+                <div className="absolute top-0 right-0 bottom-0 w-4 bg-white/30 skew-x-[-20deg]"></div>
               </div>
             </div>
-            <div className="bg-white/20 rounded-full p-2 backdrop-blur-sm">
-              <ChevronRight className="w-8 h-8 text-white" />
-            </div>
+            <span className="font-bold text-[#8DA6A1]">40%</span>
           </div>
-        )}
-
-        {/* 🌟 MENYULAR TO'RI (Minimalistik kartalar) */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isLocked = item.isPremiumOnly && !user.isPremium;
-            
-            return (
-              <button
-                key={item.id}
-                onClick={() => isLocked ? onNavigate('premium') : onNavigate(item.id)}
-                className={`
-                  relative bg-white p-5 md:p-8 rounded-[32px] border-2 border-gray-200 
-                  flex flex-col items-center text-center transition-all outline-none
-                  ${isLocked ? 'opacity-80 grayscale-[20%]' : 'hover:border-indigo-300'}
-                  border-b-[8px] active:border-b-2 active:translate-y-[6px]
-                `}
-              >
-                {/* Qulf ikonchasi */}
-                {isLocked && (
-                  <div className="absolute top-4 right-4 bg-gray-100 px-3 py-1.5 rounded-full border-2 border-gray-200 flex items-center shadow-sm">
-                    <Lock className="w-3.5 h-3.5 mr-1 text-gray-500" /> 
-                    <span className="text-[10px] font-black uppercase text-gray-500 tracking-wider">PRO</span>
-                  </div>
-                )}
-
-                <div className={`w-20 h-20 md:w-24 md:h-24 ${item.bgColor} rounded-[24px] flex items-center justify-center mb-4 md:mb-6 border-2 border-white shadow-inner transform ${!isLocked && 'group-hover:scale-110 transition-transform'}`}>
-                  <Icon className={`w-10 h-10 md:w-12 md:h-12 ${item.iconColor}`} />
-                </div>
-                
-                <h3 className="text-lg md:text-xl font-black text-gray-800 mb-1">{item.title}</h3>
-                <p className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-wider">{item.desc}</p>
-              </button>
-            );
-          })}
         </div>
 
-        {/* 🌟 ADMIN TUGMASI (Faqat Adminga ko'rinadi) */}
-        {isAdmin && (
-          <button
-            onClick={() => onNavigate('admin-panel')}
-            className="w-full mt-10 bg-gray-800 hover:bg-gray-700 text-white p-5 rounded-[24px] flex items-center justify-center border-b-[6px] border-gray-900 active:border-b-0 active:translate-y-[6px] transition-all"
+        <h3 className="font-black text-[#2C4A44] text-xl px-2">Kategoriyalar</h3>
+
+        {/* MAYDA KARTALAR GRIDI */}
+        <div className="grid grid-cols-2 gap-4">
+          
+          {/* Mock Test */}
+          <button 
+            onClick={() => user.isPremium ? onNavigate('mock-test') : onNavigate('premium')}
+            className={`bg-white rounded-[28px] p-5 text-left border-b-[6px] active:border-b-0 active:translate-y-[6px] transition-all relative overflow-hidden ${
+              user.isPremium ? 'border-[#E8DFCC] hover:bg-[#FAFAFA]' : 'border-gray-200 opacity-90'
+            }`}
           >
-            <Settings className="w-6 h-6 text-gray-300 mr-3" />
-            <span className="text-lg font-black tracking-wide">Admin Panel</span>
+            {!user.isPremium && (
+              <div className="absolute top-3 right-3 bg-gray-100 rounded-full p-1.5"><Lock className="w-4 h-4 text-gray-400" /></div>
+            )}
+            <div className="w-12 h-12 bg-[#E6F4F1] rounded-2xl flex items-center justify-center mb-4">
+              <FileText className="w-6 h-6 text-[#2EB8A6]" />
+            </div>
+            <h3 className="font-black text-[#2C4A44] text-lg mb-1">Mock Test</h3>
+            <p className="text-xs font-bold text-[#8DA6A1] uppercase">Aynıǵa 1 ret</p>
+          </button>
+
+          {/* Adabiyotlar */}
+          <button 
+            onClick={() => onNavigate('literature')}
+            className="bg-white rounded-[28px] p-5 text-left border-b-[6px] border-[#E8DFCC] hover:bg-[#FAFAFA] active:border-b-0 active:translate-y-[6px] transition-all"
+          >
+            <div className="w-12 h-12 bg-[#FFF4E5] rounded-2xl flex items-center justify-center mb-4">
+              <Book className="w-6 h-6 text-[#FF9500]" />
+            </div>
+            <h3 className="font-black text-[#2C4A44] text-lg mb-1">Ádebiyatlar</h3>
+            <p className="text-xs font-bold text-[#8DA6A1] uppercase">Kitaplar</p>
+          </button>
+
+          {/* O'quv markazlari */}
+          <button 
+            onClick={() => onNavigate('learning-centers')}
+            className="bg-white rounded-[28px] p-5 text-left border-b-[6px] border-[#E8DFCC] hover:bg-[#FAFAFA] active:border-b-0 active:translate-y-[6px] transition-all"
+          >
+            <div className="w-12 h-12 bg-[#FEEBEE] rounded-2xl flex items-center justify-center mb-4">
+              <GraduationCap className="w-6 h-6 text-[#F44336]" />
+            </div>
+            <h3 className="font-black text-[#2C4A44] text-lg mb-1">Merkezler</h3>
+            <p className="text-xs font-bold text-[#8DA6A1] uppercase">Offlayn</p>
+          </button>
+
+          {/* Sovg'alar */}
+          <button 
+            onClick={() => user.isPremium ? onNavigate('rewards') : onNavigate('premium')}
+            className="bg-white rounded-[28px] p-5 text-left border-b-[6px] border-[#E8DFCC] hover:bg-[#FAFAFA] active:border-b-0 active:translate-y-[6px] transition-all"
+          >
+            <div className="w-12 h-12 bg-[#F3E5F5] rounded-2xl flex items-center justify-center mb-4">
+              <Gift className="w-6 h-6 text-[#9C27B0]" />
+            </div>
+            <h3 className="font-black text-[#2C4A44] text-lg mb-1">Sovǵalar</h3>
+            <p className="text-xs font-bold text-[#8DA6A1] uppercase">Coin almasıw</p>
+          </button>
+
+        </div>
+
+      </main>
+
+      {/* 🌟 BOTTOM NAVIGATION (Pastki menyu) */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 rounded-t-[32px] px-6 py-4 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 pb-safe">
+        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center p-2 ${activeTab === 'home' ? 'text-[#2EB8A6]' : 'text-[#A0B8B4] hover:text-[#2EB8A6]'}`}>
+          <Home className={`w-7 h-7 mb-1 ${activeTab === 'home' ? 'fill-[#2EB8A6]' : ''}`} />
+          <span className="text-[11px] font-extrabold uppercase tracking-wide">Uy</span>
+        </button>
+        
+        <button onClick={() => { setActiveTab('explore'); onNavigate('exercises'); }} className={`flex flex-col items-center p-2 ${activeTab === 'explore' ? 'text-[#2EB8A6]' : 'text-[#A0B8B4] hover:text-[#2EB8A6]'}`}>
+          <Compass className={`w-7 h-7 mb-1 ${activeTab === 'explore' ? 'fill-[#2EB8A6]' : ''}`} />
+          <span className="text-[11px] font-extrabold uppercase tracking-wide">Úyreniw</span>
+        </button>
+
+        <button onClick={() => { setActiveTab('stats'); onNavigate('statistics'); }} className={`flex flex-col items-center p-2 ${activeTab === 'stats' ? 'text-[#2EB8A6]' : 'text-[#A0B8B4] hover:text-[#2EB8A6]'}`}>
+          <BarChart2 className={`w-7 h-7 mb-1 ${activeTab === 'stats' ? 'fill-[#2EB8A6]' : ''}`} />
+          <span className="text-[11px] font-extrabold uppercase tracking-wide">Jetistik</span>
+        </button>
+
+        {isAdmin ? (
+          <button onClick={() => onNavigate('admin-panel')} className="flex flex-col items-center p-2 text-[#A0B8B4] hover:text-[#2C4A44]">
+            <Settings className="w-7 h-7 mb-1" />
+            <span className="text-[11px] font-extrabold uppercase tracking-wide">Admin</span>
+          </button>
+        ) : (
+          <button onClick={() => { setActiveTab('profile'); }} className={`flex flex-col items-center p-2 ${activeTab === 'profile' ? 'text-[#2EB8A6]' : 'text-[#A0B8B4] hover:text-[#2EB8A6]'}`}>
+            <User className={`w-7 h-7 mb-1 ${activeTab === 'profile' ? 'fill-[#2EB8A6]' : ''}`} />
+            <span className="text-[11px] font-extrabold uppercase tracking-wide">Profil</span>
           </button>
         )}
-        
-      </main>
+      </nav>
+
     </div>
   );
 }
