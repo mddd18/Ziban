@@ -6,7 +6,11 @@ import { supabase } from '../../supabase';
 import { Loader2 } from 'lucide-react'; 
 
 // Logotipni chaqiramiz
-import logoImage from './ziban.jpg'; 
+<img 
+  src="/ziban.jpg" 
+  alt="Ziyban Logo" 
+  className="w-full h-full object-contain"
+/>
 
 interface LoginScreenProps {
   onLogin: (user: { firstName: string; lastName: string; phone: string; coins: number; isPremium?: boolean }) => void;
