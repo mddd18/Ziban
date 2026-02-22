@@ -14,7 +14,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Telefon formati (+998 va 9 ta raqam)
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let input = e.target.value;
     if (input.length < 4 || !input.startsWith('+998')) {
@@ -86,90 +85,111 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    // Apple tizim shriftlari va #F5F5F7 fon
-    <div 
-      className="min-h-screen bg-[#F5F5F7] flex items-center justify-center p-4 selection:bg-[#007AFF] selection:text-white"
-      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
-    >
-      {/* Karta: Mutlaqo toza, nozik soya bilan */}
-      <div className="w-full max-w-[400px] bg-white rounded-[28px] p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+    // FON: O'ta yorqin sariq rang va qora selection effekti
+    <div className="min-h-screen bg-[#FFC900] flex items-center justify-center p-4 selection:bg-black selection:text-white font-sans">
+      
+      {/* KARTA: Qalin qora hoshiya va qattiq blokli soya */}
+      <div className="w-full max-w-[420px] bg-white border-4 border-black p-8 shadow-[8px_8px_0_0_rgba(0,0,0,1)] rounded-2xl relative">
         
-        {/* Apple uslubidagi Sarlavha */}
-        <div className="flex flex-col items-center mb-10 text-center">
-          <div className="w-[72px] h-[72px] mb-5 rounded-2xl overflow-hidden shadow-sm border border-gray-100 p-1">
+        {/* Dekorativ element (yulduzcha) */}
+        <div className="absolute -top-4 -right-4 bg-[#FF90E8] border-4 border-black w-12 h-12 rounded-full flex items-center justify-center shadow-[4px_4px_0_0_rgba(0,0,0,1)] z-10 transform rotate-12">
+          <span className="font-black text-xl">✨</span>
+        </div>
+
+        {/* LOGO QISMI */}
+        <div className="flex flex-col items-center mb-8 text-center mt-2">
+          <div className="w-24 h-24 mb-6 bg-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-2 rounded-xl flex items-center justify-center transform -rotate-2 hover:rotate-0 transition-transform cursor-pointer">
             <img 
               src="/ziban.jpg" 
               alt="Ziyban Logo" 
-              className="w-full h-full object-contain rounded-xl"
+              className="w-full h-full object-contain"
             />
           </div>
-          <h1 className="text-[26px] font-semibold text-[#1D1D1F] tracking-tight mb-1">
+          <h1 className="text-4xl font-black text-black uppercase tracking-tighter mb-2 transform skew-x-[-5deg]">
             Ziyban
           </h1>
-          <p className="text-[15px] text-[#86868B]">
-            Milliy sertifikatqa tayyarlıq
+          <p className="text-sm font-bold bg-[#A6FAEB] text-black px-3 py-1 border-2 border-black inline-block rounded-md uppercase tracking-wider shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+            Milliy sertifikat
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-3">
-             {/* Inputlar: Apple'ning klassik och-kulrang foni (#F2F2F7), silliq outline */}
-             <input
-               type="tel"
-               value={phone}
-               onChange={handlePhoneChange}
-               placeholder="Telefon nomer"
-               required
-               className="w-full h-[52px] bg-[#F2F2F7] focus:bg-white border focus:border-[#007AFF] border-transparent rounded-[14px] px-4 text-[17px] text-[#1D1D1F] outline-none transition-colors placeholder-[#86868B]"
-             />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-4">
+             {/* INPUT 1: Qalin hoshiya, bosganda qattiq soya yo'qoladi va ichkariga kiradi */}
+             <div className="relative">
+               <label className="absolute -top-3 left-4 bg-[#FF4911] text-white px-2 py-0.5 text-xs font-black uppercase border-2 border-black rounded-md z-10">
+                 Telefon
+               </label>
+               <input
+                 type="tel"
+                 value={phone}
+                 onChange={handlePhoneChange}
+                 required
+                 className="w-full h-14 bg-white focus:bg-[#FFFDF8] border-4 border-black rounded-xl px-4 text-xl font-bold text-black outline-none transition-all shadow-[4px_4px_0_0_rgba(0,0,0,1)] focus:translate-x-1 focus:translate-y-1 focus:shadow-none"
+               />
+             </div>
 
              {isRegistering && (
-                <div className="flex gap-3 animate-in fade-in duration-300">
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Atı"
-                    required
-                    className="w-full h-[52px] bg-[#F2F2F7] focus:bg-white border focus:border-[#007AFF] border-transparent rounded-[14px] px-4 text-[17px] text-[#1D1D1F] outline-none transition-colors placeholder-[#86868B]"
-                  />
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Familiya"
-                    required
-                    className="w-full h-[52px] bg-[#F2F2F7] focus:bg-white border focus:border-[#007AFF] border-transparent rounded-[14px] px-4 text-[17px] text-[#1D1D1F] outline-none transition-colors placeholder-[#86868B]"
-                  />
+                <div className="flex gap-4 animate-in slide-in-from-top-4 duration-300">
+                  <div className="relative w-full">
+                    <label className="absolute -top-3 left-3 bg-[#B28DFF] text-white px-2 py-0.5 text-xs font-black uppercase border-2 border-black rounded-md z-10">
+                      Atı
+                    </label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                      className="w-full h-14 bg-white focus:bg-[#FFFDF8] border-4 border-black rounded-xl px-4 text-lg font-bold text-black outline-none transition-all shadow-[4px_4px_0_0_rgba(0,0,0,1)] focus:translate-x-1 focus:translate-y-1 focus:shadow-none"
+                    />
+                  </div>
+                  <div className="relative w-full">
+                    <label className="absolute -top-3 left-3 bg-[#B28DFF] text-white px-2 py-0.5 text-xs font-black uppercase border-2 border-black rounded-md z-10">
+                      Familiya
+                    </label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                      className="w-full h-14 bg-white focus:bg-[#FFFDF8] border-4 border-black rounded-xl px-4 text-lg font-bold text-black outline-none transition-all shadow-[4px_4px_0_0_rgba(0,0,0,1)] focus:translate-x-1 focus:translate-y-1 focus:shadow-none"
+                    />
+                  </div>
                 </div>
              )}
 
-             <input
-               type="password"
-               value={password}
-               onChange={(e) => setPassword(e.target.value)}
-               placeholder="Parol"
-               required
-               className="w-full h-[52px] bg-[#F2F2F7] focus:bg-white border focus:border-[#007AFF] border-transparent rounded-[14px] px-4 text-[17px] text-[#1D1D1F] outline-none transition-colors placeholder-[#86868B] tracking-wide"
-             />
+             <div className="relative">
+               <label className="absolute -top-3 left-4 bg-[#00C2FF] text-black px-2 py-0.5 text-xs font-black uppercase border-2 border-black rounded-md z-10">
+                 Parol
+               </label>
+               <input
+                 type="password"
+                 value={password}
+                 onChange={(e) => setPassword(e.target.value)}
+                 required
+                 className="w-full h-14 bg-white focus:bg-[#FFFDF8] border-4 border-black rounded-xl px-4 text-2xl font-black text-black outline-none transition-all shadow-[4px_4px_0_0_rgba(0,0,0,1)] focus:translate-x-1 focus:translate-y-1 focus:shadow-none tracking-[0.2em]"
+               />
+             </div>
           </div>
 
-          {/* Tugma: Apple Blue, silliq bosilish effekti, ortiqcha chiziqlarsiz */}
+          {/* ASOSIY TUGMA: O'ta baqiruvchi va interaktiv */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-[52px] mt-2 bg-[#007AFF] hover:bg-[#0066CC] active:scale-[0.98] text-white rounded-[14px] text-[17px] font-semibold transition-all flex items-center justify-center"
+            className={`w-full h-16 mt-4 border-4 border-black rounded-xl text-xl font-black uppercase tracking-widest transition-all flex items-center justify-center shadow-[6px_6px_0_0_rgba(0,0,0,1)] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none disabled:opacity-50 disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-[6px_6px_0_0_rgba(0,0,0,1)]
+              ${isRegistering ? 'bg-[#00E59B] hover:bg-[#00c786] text-black' : 'bg-black text-white hover:bg-gray-800'}
+            `}
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isRegistering ? 'Dawam etiw' : 'Kiriw')}
+            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : (isRegistering ? 'BASLAW! 🚀' : 'KIRIW')}
           </button>
         </form>
 
-        {/* Qo'shimcha havolalar */}
+        {/* QOSHIMCHA TUGMA */}
         <div className="mt-6 text-center">
           <button
             type="button"
             onClick={() => { setIsRegistering(!isRegistering); setPassword(''); }}
-            className="text-[#007AFF] text-[15px] hover:underline"
+            className="text-black text-sm font-bold uppercase underline decoration-4 decoration-[#FFC900] hover:bg-[#FFC900] px-2 py-1 transition-all"
           >
             {isRegistering ? 'Mende akkaunt bar. Kiriw' : 'Jańa akkaunt ashıw'}
           </button>
