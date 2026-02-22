@@ -88,4 +88,59 @@ export default function ExerciseSession({ exerciseType, onComplete, onBack }: Ex
                   : 'bg-white border-[#E8DFCC] text-[#2C4A44]'
               } ${isAnswered && idx === questions[currentStep].correct ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : ''}`}
             >
-              <span className={`w-10 h-10 rounded-2xl flex items-
+              <span className={`w-10 h-10 rounded-2xl flex items-center justify-center mr-4 border-2 font-black text-sm shrink-0 transition-colors ${
+                selectedAnswer === idx ? 'bg-[#2EB8A6] text-white border-[#2EB8A6]' : 'bg-[#F5EEDC] text-[#8DA6A1] border-transparent'
+              }`}>
+                {idx + 1}
+              </span>
+              <span className="flex-1 leading-tight">{option}</span>
+            </button>
+          ))}
+        </div>
+      </main>
+
+      {/* 🏁 BOTTOM ACTION BAR */}
+      <footer className={`p-8 pb-10 rounded-t-[50px] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] transition-all duration-500 ${
+        isAnswered 
+          ? (selectedAnswer === questions[currentStep].correct ? 'bg-emerald-500' : 'bg-[#F44336]') 
+          : 'bg-white'
+      }`}>
+        {!isAnswered ? (
+          <button
+            disabled={selectedAnswer === null}
+            onClick={handleCheck}
+            className={`w-full py-5 rounded-[28px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${
+              selectedAnswer !== null 
+                ? 'bg-[#2EB8A6] text-white shadow-emerald-900/20' 
+                : 'bg-[#E8DFCC] text-[#A0B8B4] cursor-not-allowed border-b-[4px] border-[#D1C7B1]'
+            }`}
+          >
+            Tekseriw
+          </button>
+        ) : (
+          <div className="flex flex-col items-center space-y-6">
+            <div className="flex items-center space-x-3 text-white">
+              {selectedAnswer === questions[currentStep].correct ? (
+                <>
+                  <CheckCircle2 className="w-8 h-8 animate-bounce" />
+                  <span className="font-black text-xl uppercase tracking-widest">Júdá jaqsı!</span>
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="w-8 h-8" />
+                  <span className="font-black text-xl uppercase tracking-widest">Oylap kór...</span>
+                </>
+              )}
+            </div>
+            <button
+              onClick={handleNext}
+              className="w-full bg-white text-[#2C4A44] py-5 rounded-[28px] font-black uppercase tracking-widest shadow-2xl active:scale-95 transition-all"
+            >
+              Dawam etiw
+            </button>
+          </div>
+        )}
+      </footer>
+    </div>
+  );
+}
