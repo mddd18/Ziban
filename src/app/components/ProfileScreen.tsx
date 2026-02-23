@@ -1,4 +1,4 @@
-import { User, LogOut, Award, Calendar, ChevronLeft, ShieldCheck, Phone, Star, Zap, Target } from 'lucide-react';
+import { User, LogOut, Award, Calendar, ChevronLeft, ShieldCheck, Phone, Star, Zap, Target, GraduationCap, School, BookOpen } from 'lucide-react';
 
 interface ProfileScreenProps {
   user: { 
@@ -8,7 +8,8 @@ interface ProfileScreenProps {
     coins: number; 
     isPremium?: boolean; 
     streak?: number; 
-    learnedWords?: number 
+    learnedWords?: number;
+    role?: string; // ✅ Rol qo'shildi
   };
   onBack: () => void;
   onLogout: () => void;
@@ -23,7 +24,7 @@ export default function ProfileScreen({ user, onBack, onLogout }: ProfileScreenP
       title: "Bilimdan", 
       desc: "100 sóz yodla", 
       icon: <Star className="text-yellow-500" />, 
-      progress: user.learnedWords || 0, // Bazadagi learnedWords
+      progress: user.learnedWords || 0, 
       total: 100, 
       color: "bg-yellow-100" 
     },
@@ -32,7 +33,7 @@ export default function ProfileScreen({ user, onBack, onLogout }: ProfileScreenP
       title: "Intizom", 
       desc: "7 kúnlik streak", 
       icon: <Zap className="text-orange-500" />, 
-      progress: user.streak || 0, // Bazadagi streak
+      progress: user.streak || 0, 
       total: 7, 
       color: "bg-orange-100" 
     },
@@ -47,6 +48,17 @@ export default function ProfileScreen({ user, onBack, onLogout }: ProfileScreenP
     },
   ];
 
+  // 🎓 ROLGA QARAB IKONKA CHIQARISH FUNKSIYASI
+  const getRoleIcon = (roleName?: string) => {
+    switch(roleName) {
+      case 'Student': return <GraduationCap className="w-4 h-4 text-white" />;
+      case 'Abiturient': return <Target className="w-4 h-4 text-white" />;
+      case 'Oqıwshı': return <School className="w-4 h-4 text-white" />;
+      case 'Oqıtıwshı': return <BookOpen className="w-4 h-4 text-white" />;
+      default: return <User className="w-4 h-4 text-white" />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F5EEDC] font-sans pb-10 flex flex-col">
       
@@ -59,12 +71,14 @@ export default function ProfileScreen({ user, onBack, onLogout }: ProfileScreenP
           <ChevronLeft className="w-6 h-6" />
         </button>
 
-        <div className="w-32 h-32 bg-white rounded-full mx-auto p-1.5 border-4 border-[#F4C150] shadow-2xl relative mt-2">
-          <div className="w-full h-full bg-[#E6F4F1] rounded-full flex items-center justify-center overflow-hidden">
-            <User className="w-16 h-16 text-[#2EB8A6]" />
+        <div className="relative inline-block mt-2">
+          <div className="w-32 h-32 bg-white rounded-full mx-auto p-1.5 border-4 border-[#F4C150] shadow-2xl relative z-10">
+            <div className="w-full h-full bg-[#E6F4F1] rounded-full flex items-center justify-center overflow-hidden">
+              <User className="w-16 h-16 text-[#2EB8A6]" />
+            </div>
           </div>
           {user.isPremium && (
-            <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-2 shadow-md border-2 border-[#2EB8A6]">
+            <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-2 shadow-md border-2 border-[#2EB8A6] z-20">
               <ShieldCheck className="w-6 h-6 text-[#F4C150] fill-[#F4C150]" />
             </div>
           )}
@@ -74,10 +88,20 @@ export default function ProfileScreen({ user, onBack, onLogout }: ProfileScreenP
           {user.firstName} {user.lastName}
         </h2>
         <p className="text-white/70 font-bold text-sm mt-1 tracking-widest">{user.phone}</p>
+
+        {/* 🎓 ROL NISHONI (BADGE) */}
+        <div className="mt-4 flex justify-center animate-in fade-in slide-in-from-bottom-2">
+          <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30 flex items-center gap-2 shadow-sm">
+            {getRoleIcon(user.role)}
+            <span className="text-white font-black text-xs uppercase tracking-widest">
+              {user.role || 'Paydalanıwshı'}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* ⚪️ STATS CARDS: STREAK VAlearned_words */}
-      <div className="px-6 -mt-12 grid grid-cols-2 gap-4 relative z-10">
+      {/* ⚪️ STATS CARDS: STREAK VA learned_words */}
+      <div className="px-6 -mt-12 grid grid-cols-2 gap-4 relative z-20">
         <div className="bg-white p-6 rounded-[35px] shadow-md border-b-[6px] border-[#E8DFCC] flex flex-col items-center">
           <Calendar className="w-8 h-8 text-[#FF9500] mb-2" />
           <span className="text-2xl font-black text-[#2C4A44]">{user.streak || 0}</span>
@@ -121,10 +145,10 @@ export default function ProfileScreen({ user, onBack, onLogout }: ProfileScreenP
       </div>
 
       {/* 📱 LOGOUT BUTTON */}
-      <div className="px-6 mt-12 mb-8">
+      <div className="px-6 mt-12 mb-8 flex-grow flex items-end">
         <button 
           onClick={onLogout} 
-          className="w-full bg-[#FEEBEE] p-5 rounded-[30px] flex items-center justify-center space-x-3 border-b-[6px] border-[#FFCDD2] active:translate-y-1 active:border-b-0 transition-all"
+          className="w-full bg-[#FEEBEE] p-5 rounded-[30px] flex items-center justify-center space-x-3 border-b-[6px] border-[#FFCDD2] active:translate-y-[6px] active:border-b-0 transition-all"
         >
           <LogOut className="w-6 h-6 text-[#F44336]" />
           <span className="text-[#F44336] font-black uppercase tracking-widest text-sm">Akkaunttan shıǵıw</span>
