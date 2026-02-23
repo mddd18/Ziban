@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase'; 
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock, Crown } from 'lucide-react';
 
 // Komponentlarni import qilish
 import LoginScreen from './components/LoginScreen';
@@ -26,6 +26,32 @@ interface User {
   isPremium?: boolean;
 }
 
+// 🔐 Bloklash ekrani komponenti (Faqat bitta joyda yoziladi)
+function PremiumLockScreen({ title, desc, onNavigate }: { title: string, desc: string, onNavigate: any }) {
+  return (
+    <div className="min-h-screen bg-[#FDFCF9] flex flex-col items-center justify-center px-10 text-center animate-in fade-in duration-500">
+      <div className="relative mb-8">
+        <div className="w-24 h-24 bg-[#F5EEDC] rounded-[40px] flex items-center justify-center border-2 border-[#E8DFCC]">
+          <Lock className="w-10 h-10 text-[#A0B8B4] opacity-30" />
+        </div>
+        <div className="absolute -right-2 -bottom-2 w-12 h-12 bg-amber-400 rounded-2xl flex items-center justify-center shadow-lg border-4 border-white animate-bounce">
+          <Crown className="w-6 h-6 text-white fill-white" />
+        </div>
+      </div>
+      <h2 className="text-[#2C4A44] font-black text-2xl uppercase tracking-tight mb-3">{title}</h2>
+      <p className="text-[#8DA6A1] font-bold text-sm mb-10 leading-relaxed">{desc}</p>
+      <div className="w-full space-y-4">
+        <button onClick={() => onNavigate('premium')} className="w-full bg-[#2EB8A6] text-white py-5 rounded-[28px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all">
+          Premiumǵa ótiw
+        </button>
+        <button onClick={() => onNavigate('dashboard')} className="w-full py-4 text-[#A0B8B4] font-black uppercase text-[10px] tracking-[0.2em]">
+          DASHBOARDQA QAYTIW
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true); 
@@ -35,12 +61,10 @@ export default function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // 1. LocalStorage dan barcha kerakli ma'lumotlarni tekshirish
         const storedUser = localStorage.getItem('user');
         const userPhone = localStorage.getItem('userPhone');
 
         if (storedUser && userPhone) {
-          // 2. Avval vaqtinchalik ma'lumotni o'rnatamiz (Login chiqib ketmasligi uchun)
           const parsed = JSON.parse(storedUser);
           setUser({
             firstName: parsed.first_name || parsed.firstName,
@@ -52,13 +76,7 @@ export default function App() {
             isPremium: parsed.is_premium
           });
 
-          // 3. Bazadan eng yangi ma'lumotlarni sinxronizatsiya qilamiz
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('phone', userPhone)
-            .maybeSingle();
-
+          const { data, error } = await supabase.from('users').select('*').eq('phone', userPhone).maybeSingle();
           if (data && !error) {
             const freshUser = {
               firstName: data.first_name,
@@ -76,28 +94,11 @@ export default function App() {
       } catch (err) {
         console.error("Auth error:", err);
       } finally {
-        // 4. Har qanday holatda ham tekshiruv tugagach loadingni to'xtatamiz
         setLoading(false);
       }
     };
-
     initAuth();
   }, []);
-
-  const handleUpdateCoins = async (newCoins: number) => {
-    if (user) {
-      const { error } = await supabase
-        .from('users')
-        .update({ coins: newCoins })
-        .eq('phone', user.phone);
-      
-      if (!error) {
-        setUser({ ...user, coins: newCoins });
-        const stored = JSON.parse(localStorage.getItem('user') || '{}');
-        localStorage.setItem('user', JSON.stringify({ ...stored, coins: newCoins }));
-      }
-    }
-  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -105,7 +106,6 @@ export default function App() {
     setCurrentView('dashboard');
   };
 
-  // ✅ BU JUDA MUHIM: Loading vaqtida Loginni ko'rsatmaslik!
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5EEDC]">
@@ -115,7 +115,6 @@ export default function App() {
     );
   }
 
-  // ✅ Agar loading tugagan bo'lsa va user bo'lmasa, keyin Login chiqadi
   if (!user) {
     return (
       <LoginScreen onLogin={(userData) => {
@@ -128,33 +127,28 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F5EEDC]">
-      {currentView === 'dashboard' && (
-        <MainDashboard user={user} onNavigate={(v: any) => setCurrentView(v)} onLogout={handleLogout} />
-      )}
-      
-      {currentView === 'exercises' && (
-        <ExercisesList 
-          onBack={() => setCurrentView('dashboard')} 
-          onStartExercise={(type) => { setSelectedExerciseType(type); setCurrentView('exercise-session'); }} 
-        />
-      )}
-
-      {currentView === 'exercise-session' && selectedExerciseType && (
-        <ExerciseSession 
-          exerciseType={selectedExerciseType} 
-          onComplete={() => setCurrentView('exercises')}
-          onBack={() => setCurrentView('exercises')} 
-        />
-      )}
-
+      {currentView === 'dashboard' && <MainDashboard user={user} onNavigate={(v: any) => setCurrentView(v)} onLogout={handleLogout} />}
+      {currentView === 'exercises' && <ExercisesList onBack={() => setCurrentView('dashboard')} onStartExercise={(type) => { setSelectedExerciseType(type); setCurrentView('exercise-session'); }} />}
+      {currentView === 'exercise-session' && selectedExerciseType && <ExerciseSession exerciseType={selectedExerciseType} onComplete={() => setCurrentView('exercises')} onBack={() => setCurrentView('exercises')} />}
       {currentView === 'statistics' && <Statistics user={user} onBack={() => setCurrentView('dashboard')} />}
       {currentView === 'profile' && <ProfileScreen user={user} onBack={() => setCurrentView('dashboard')} onLogout={handleLogout} />}
       {currentView === 'literature' && <Literature onBack={() => setCurrentView('dashboard')} />}
-      {currentView === 'mock-test' && <MockTest onComplete={() => setCurrentView('dashboard')} />}
-      {currentView === 'rewards' && <VoucherStore onBack={() => setCurrentView('dashboard')} />}
+
+      {/* 🛡️ MOCK TEST: Faqat Premium uchun */}
+      {currentView === 'mock-test' && (
+        user.isPremium ? <MockTest onComplete={() => setCurrentView('dashboard')} /> : 
+        <PremiumLockScreen title="Mock Test Jabıq" desc="Milliy sertifikat testlerin tapsırıw ushın Premium statusı kerek." onNavigate={setCurrentView} />
+      )}
+
+      {/* 🎁 REWARDS (COINLAR): Faqat Premium uchun */}
+      {currentView === 'rewards' && (
+        user.isPremium ? <VoucherStore onBack={() => setCurrentView('dashboard')} /> : 
+        <PremiumLockScreen title="Dúkán Jabıq" desc="Coinlerdi vaucherlerge almastırıw tek Premium paydalanıwshılar ushın." onNavigate={setCurrentView} />
+      )}
+
       {currentView === 'learning-centers' && <LearningCenters userCoins={user.coins} onBack={() => setCurrentView('dashboard')} />}
       {currentView === 'admin-panel' && <AdminPanel onBack={() => setCurrentView('dashboard')} />}
-      {currentView === 'premium' && <PremiumScreen onBack={() => setCurrentView('dashboard')} onUpgradeSuccess={() => setUser({...user, isPremium: true})} />}
+      {currentView === 'premium' && <PremiumScreen onBack={() => setCurrentView('dashboard')} />}
     </div>
   );
 }
