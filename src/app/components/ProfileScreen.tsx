@@ -1,78 +1,40 @@
-import { useState } from 'react';
-import { supabase } from '../../supabase';
+import { supabase } from '../../supabase'; // ✅ Build xatosi yechimi
 
-interface ProfileScreenProps {
-  user: any;
-  onUpdateUser: (updatedUser: any) => void;
-  onBack: () => void;
-  onLogout: () => void;
-}
-
-export default function ProfileScreen({ user, onUpdateUser, onBack, onLogout }: ProfileScreenProps) {
-  const [isUpdating, setIsUpdating] = useState(false);
+export default function ProfileScreen({ user, onUpdateUser, onBack, onLogout }: any) {
   const roles = ["Student", "Abiturient", "Mektep oqıwshısı", "Oqıtıwshı"];
 
   const handleRoleSelect = async (selectedRole: string) => {
-    setIsUpdating(true);
-    
-    // 1. Supabase-da foydalanuvchi rolini yangilash
-    const { data, error } = await supabase
-      .from('users')
-      .update({ role: selectedRole }) // Bazadagi 'role' ustuniga yozadi
-      .eq('phone', user.phone)
-      .select()
-      .single();
-
-    if (!error && data) {
-      // 2. Local holatni (state) yangilash
-      const updatedUser = { ...user, role: data.role };
-      onUpdateUser(updatedUser);
-      
-      // 3. LocalStorage-ni yangilash (refresh bo'lganda ham saqlanib qolishi uchun)
-      localStorage.setItem('user', JSON.stringify(data));
-      
-      alert(`Sizniń rolińiz "${selectedRole}" etip saqlandı! ✅`);
-    } else {
-      alert("Xatolik yuz berdi, qaytadan urinib ko'ring.");
+    const { error } = await supabase.from('users').update({ role: selectedRole }).eq('phone', user.phone);
+    if (!error) {
+      onUpdateUser({ ...user, role: selectedRole });
+      alert("Saqlandı! ✅");
     }
-    
-    setIsUpdating(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCF9] font-sans pb-10">
-      {/* ... Header kodi ... */}
+    <div className="min-h-screen bg-[#FDFCF9] p-6">
+      <button onClick={onBack} className="mb-8 p-3 bg-white rounded-2xl border border-[#E8DFCC]">⬅️ Qaytıw</button>
+      
+      <div className="bg-white rounded-[40px] p-8 shadow-sm border border-[#F0EBE0] text-center">
+        <div className="w-20 h-20 bg-[#E6F4F1] rounded-full mx-auto mb-4 flex items-center justify-center">
+          <span className="text-2xl font-black text-[#2EB8A6]">{user.firstName[0]}</span>
+        </div>
+        <h2 className="text-xl font-black text-[#2C4A44]">{user.firstName} {user.lastName}</h2>
+        <p className="text-[#8DA6A1] font-bold text-sm">{user.phone}</p>
+      </div>
 
-      <div className="px-6 mt-10">
-        <h3 className="text-[#2C4A44] font-black text-lg mb-4">Siz kimsiz?</h3>
-        
-        {/* Rollar ro'yxati */}
-        <div className="grid grid-cols-1 gap-3">
-          {roles.map((role) => (
-            <button
-              key={role}
-              disabled={isUpdating}
-              onClick={() => handleRoleSelect(role)}
-              className={`p-5 rounded-[28px] font-black text-sm border-b-[6px] transition-all flex items-center justify-between ${
-                user.role === role 
-                  ? 'bg-[#2EB8A6] text-white border-emerald-700 -translate-y-1' 
-                  : 'bg-white text-[#2C4A44] border-[#E8DFCC] active:translate-y-1 active:border-b-0'
-              }`}
-            >
-              <span>{role}</span>
-              {user.role === role && <div className="w-3 h-3 bg-white rounded-full animate-pulse" />}
+      <div className="mt-10 space-y-4">
+        <p className="text-[#2C4A44] font-black text-sm uppercase ml-2">Siz kimsiz?</p>
+        <div className="grid grid-cols-2 gap-3">
+          {roles.map((r) => (
+            <button key={r} onClick={() => handleRoleSelect(r)} className={`p-4 rounded-3xl font-black text-[10px] border-b-4 transition-all ${user.role === r ? 'bg-[#2EB8A6] text-white border-emerald-700' : 'bg-white text-[#2C4A44] border-[#E8DFCC]'}`}>
+              {r}
             </button>
           ))}
         </div>
-
-        {isUpdating && (
-          <p className="text-center text-[#2EB8A6] text-[10px] font-bold mt-4 animate-pulse">
-            Maǵlıwmatlar bazaga saqlanbaqta...
-          </p>
-        )}
       </div>
 
-      {/* ... Logout va boshqa tugmalar ... */}
+      <button onClick={onLogout} className="w-full mt-12 py-5 bg-red-50 text-red-500 rounded-3xl font-black uppercase tracking-widest">Shıǵıw</button>
     </div>
   );
 }
