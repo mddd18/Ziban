@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, TrendingUp, Target, History, Zap, Activity, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Target, History, Zap, Activity, CheckCircle2, BookOpen, FileText } from 'lucide-react';
 import { supabase } from '../../supabase';
 
 interface StatisticsProps {
@@ -8,7 +8,8 @@ interface StatisticsProps {
 }
 
 export default function Statistics({ user, onBack }: StatisticsProps) {
-  const [timeFilter, setTimeFilter] = useState<'kun' | 'hafta' | 'ay'>('hafta');
+  // kún, hápte, ay
+  const [timeFilter, setTimeFilter] = useState<'kún' | 'hápte' | 'ay'>('hápte');
   const [mockHistory, setMockHistory] = useState<any[]>([]);
   const [weeklyData, setWeeklyData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [displayStats, setDisplayStats] = useState({ testCount: 0, wordCount: 0, accuracy: 0 });
@@ -35,9 +36,8 @@ export default function Statistics({ user, onBack }: StatisticsProps) {
     fetchRealData();
   }, [user.phone, timeFilter]);
 
-  // 📈 HAFTALIK GRAFIK UCHUN KUNLIK HISOBLASH
   const calculateWeeklyChart = (data: any[]) => {
-    const counts = [0, 0, 0, 0, 0, 0, 0]; // Dush-Yaksh
+    const counts = [0, 0, 0, 0, 0, 0, 0]; 
     const now = new Date();
     
     data.forEach(item => {
@@ -46,9 +46,7 @@ export default function Statistics({ user, onBack }: StatisticsProps) {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
       if (diffDays <= 7) {
-        // Haftaning kunini aniqlash (0-Yakshanba, 1-Dushanba...)
         let dayIndex = itemDate.getDay();
-        // Dushanbani 0-index qilish uchun formatlash
         dayIndex = dayIndex === 0 ? 6 : dayIndex - 1;
         counts[dayIndex] += item.total_questions;
       }
@@ -60,8 +58,8 @@ export default function Statistics({ user, onBack }: StatisticsProps) {
     const now = new Date();
     const filtered = data.filter(item => {
       const itemDate = new Date(item.created_at);
-      if (filter === 'kun') return itemDate.toDateString() === now.toDateString();
-      if (filter === 'hafta') {
+      if (filter === 'kún') return itemDate.toDateString() === now.toDateString();
+      if (filter === 'hápte') {
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         return itemDate >= weekAgo;
       }
@@ -78,23 +76,39 @@ export default function Statistics({ user, onBack }: StatisticsProps) {
     });
   };
 
-  const days = ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'];
-  const maxWords = Math.max(...weeklyData, 100); // Grafik balandligi uchun
+  // Dúyshembi, Siyshembi, Sárshembi, Piyshembi, Juma, Shenbi, Ekshembi
+  const days = ['Dú', 'Si', 'Sá', 'Pi', 'Ju', 'Sh', 'Ek'];
+  const maxWords = Math.max(...weeklyData, 100); 
 
   return (
     <div className="min-h-screen bg-[#F5EEDC] font-sans pb-20">
-      <div className="bg-[#2EB8A6] pt-14 pb-20 px-6 rounded-b-[60px] shadow-lg relative text-center">
+      <div className="bg-[#2EB8A6] pt-14 pb-24 px-6 rounded-b-[60px] shadow-lg relative text-center">
         <button onClick={onBack} className="absolute top-12 left-6 p-2.5 bg-white/20 rounded-2xl text-white backdrop-blur-md border border-white/30 active:scale-90">
           <ChevronLeft className="w-6 h-6" />
         </button>
         <h2 className="text-white font-black text-2xl uppercase tracking-[0.2em] pt-2">Jetistikler</h2>
       </div>
 
-      <main className="px-6 -mt-12 space-y-6">
-        {/* 📑 TEPADAGI FILTR VA KARTALAR */}
-        <div className="space-y-4">
+      <main className="px-6 -mt-16 space-y-6 relative z-10">
+        
+        {/* 🏆 ASOSIY KARTALAR */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white p-6 rounded-[35px] shadow-md border-b-[6px] border-[#E8DFCC] flex flex-col items-center text-center">
+            <BookOpen className="w-8 h-8 text-emerald-500 mb-2" />
+            <span className="text-3xl font-black text-[#2C4A44] leading-none mb-1">{user.learnedWords || 0}</span>
+            <span className="text-[10px] font-black text-[#8DA6A1] uppercase tracking-tighter">Úyrenilgen sózler</span>
+          </div>
+          <div className="bg-white p-6 rounded-[35px] shadow-md border-b-[6px] border-[#E8DFCC] flex flex-col items-center text-center">
+            <FileText className="w-8 h-8 text-blue-500 mb-2" />
+            <span className="text-3xl font-black text-[#2C4A44] leading-none mb-1">{mockHistory.length}</span>
+            <span className="text-[10px] font-black text-[#8DA6A1] uppercase tracking-tighter">Islegen testler</span>
+          </div>
+        </div>
+
+        {/* 📑 FILTR VA DETALLAR */}
+        <div className="space-y-4 pt-4">
           <div className="flex bg-white/50 backdrop-blur-md p-1.5 rounded-3xl border border-white shadow-sm">
-            {(['kun', 'hafta', 'ay'] as const).map((f) => (
+            {(['kún', 'hápte', 'ay'] as const).map((f) => (
               <button key={f} onClick={() => setTimeFilter(f)} className={`flex-1 py-2.5 rounded-2xl text-[10px] font-black uppercase transition-all ${timeFilter === f ? 'bg-[#2EB8A6] text-white shadow-md' : 'text-[#8DA6A1]'}`}>
                 {f}
               </button>
@@ -102,17 +116,17 @@ export default function Statistics({ user, onBack }: StatisticsProps) {
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white p-4 rounded-[28px] shadow-sm border-b-4 border-[#E8DFCC] text-center">
+            <div className="bg-white p-4 rounded-[28px] shadow-sm border-b-[4px] border-[#E8DFCC] text-center">
               <Activity className="w-5 h-5 mx-auto mb-1 text-[#2EB8A6]" />
               <p className="text-lg font-black text-[#2C4A44] leading-none">{displayStats.testCount}</p>
               <p className="text-[8px] font-black text-[#8DA6A1] uppercase mt-1">Testler</p>
             </div>
-            <div className="bg-white p-4 rounded-[28px] shadow-sm border-b-4 border-[#E8DFCC] text-center">
+            <div className="bg-white p-4 rounded-[28px] shadow-sm border-b-[4px] border-[#E8DFCC] text-center">
               <Zap className="w-5 h-5 mx-auto mb-1 text-[#FF9500]" />
               <p className="text-lg font-black text-[#2C4A44] leading-none">{displayStats.wordCount}</p>
               <p className="text-[8px] font-black text-[#8DA6A1] uppercase mt-1">Sózler</p>
             </div>
-            <div className="bg-white p-4 rounded-[28px] shadow-sm border-b-4 border-[#E8DFCC] text-center">
+            <div className="bg-white p-4 rounded-[28px] shadow-sm border-b-[4px] border-[#E8DFCC] text-center">
               <CheckCircle2 className="w-5 h-5 mx-auto mb-1 text-emerald-500" />
               <p className="text-lg font-black text-[#2C4A44] leading-none">{displayStats.accuracy}%</p>
               <p className="text-[8px] font-black text-[#8DA6A1] uppercase mt-1">Anıqlıq</p>
@@ -120,10 +134,10 @@ export default function Statistics({ user, onBack }: StatisticsProps) {
           </div>
         </div>
 
-        {/* 📈 HAFTALIK DINAMIK GRAFIK (BAZADAN) */}
+        {/* 📈 HAFTALIK DINAMIK GRAFIK */}
         <div className="bg-white rounded-[40px] p-6 shadow-lg border-b-[6px] border-[#E8DFCC] space-y-4">
           <h3 className="font-black text-[#2C4A44] text-xs uppercase flex items-center ml-2">
-            <TrendingUp className="w-4 h-4 mr-2 text-[#2EB8A6]" /> Haftalıq úyrenilgen sózler
+            <TrendingUp className="w-4 h-4 mr-2 text-[#2EB8A6]" /> Háptelik úyrenilgen sózler
           </h3>
           
           <div className="h-44 flex items-end justify-between px-2 pb-2">
