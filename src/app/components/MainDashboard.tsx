@@ -143,9 +143,10 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
             <p className="text-[10px] font-black text-[#8DA6A1] uppercase tracking-tighter">Kitaplar</p>
           </button>
 
+          {/* OQIW ORAYLARI */}
           <button onClick={() => onNavigate('learning-centers')} className="bg-white rounded-[28px] p-5 text-left border-b-[6px] border-[#E8DFCC] active:translate-y-1 active:border-b-0 transition-all">
             <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-4"><GraduationCap className="w-6 h-6 text-[#F44336]" /></div>
-            <h3 className="font-black text-[#2C4A44] text-lg mb-1">Merkezler</h3>
+            <h3 className="font-black text-[#2C4A44] text-lg mb-1">Oqıw orayları</h3>
             <p className="text-[10px] font-black text-[#8DA6A1] uppercase tracking-tighter">Kurslar</p>
           </button>
 
@@ -160,26 +161,21 @@ export default function MainDashboard({ user, onNavigate, onLogout }: MainDashbo
 
       {/* 🌟 BOTTOM NAVIGATION (4 tali klassik menyu) */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-[#F0EBE0] px-6 pt-3 pb-8 flex justify-between items-center z-50 rounded-t-[40px] shadow-2xl">
-        
-        {/* BAS MENU */}
         <button onClick={() => { setActiveTab('home'); onNavigate('dashboard'); }} className={`flex flex-col items-center p-2 ${activeTab === 'home' ? 'text-[#2EB8A6]' : 'text-[#A0B8B4]'}`}>
           <Home className={`w-6 h-6 mb-1 ${activeTab === 'home' ? 'fill-[#2EB8A6]/10' : ''}`} />
           <span className="text-[9px] font-black uppercase tracking-tighter">Bas Menu</span>
         </button>
         
-        {/* SHINIǴIWLAR */}
         <button onClick={() => { setActiveTab('explore'); onNavigate('exercises'); }} className={`flex flex-col items-center p-2 ${activeTab === 'explore' ? 'text-[#2EB8A6]' : 'text-[#A0B8B4]'}`}>
           <Dumbbell className="w-6 h-6 mb-1" />
           <span className="text-[9px] font-black uppercase tracking-tighter">Shınıǵıwlar</span>
         </button>
 
-        {/* STATISTIKA */}
         <button onClick={() => { setActiveTab('stats'); onNavigate('statistics'); }} className={`flex flex-col items-center p-2 ${activeTab === 'stats' ? 'text-[#2EB8A6]' : 'text-[#A0B8B4]'}`}>
           <BarChart3 className="w-6 h-6 mb-1" />
           <span className="text-[9px] font-black uppercase tracking-tighter">Statistika</span>
         </button>
 
-        {/* PROFIL / ADMIN */}
         <button onClick={() => isAdmin ? onNavigate('admin-panel') : onNavigate('profile')} className={`flex flex-col items-center p-2 ${activeTab === 'profile' ? 'text-[#2EB8A6]' : 'text-[#A0B8B4]'}`}>
           {isAdmin ? <Settings className="w-6 h-6 mb-1" /> : <User className="w-6 h-6 mb-1" />}
           <span className="text-[9px] font-black uppercase tracking-tighter">{isAdmin ? 'Admin' : 'Profil'}</span>
